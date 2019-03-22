@@ -1,47 +1,52 @@
 package cc.mrbird.febs.system.service.impl;
 
 import cc.mrbird.febs.common.domain.QueryRequest;
-import cc.mrbird.febs.common.service.impl.BaseService;
+import cc.mrbird.febs.common.utils.SortUtil;
+import cc.mrbird.febs.system.dao.DictMapper;
 import cc.mrbird.febs.system.domain.Dict;
 import cc.mrbird.febs.system.service.DictService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.entity.Example.Criteria;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 @Service("dictService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class DictServiceImpl extends BaseService<Dict> implements DictService {
+public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements DictService {
 
     @Override
-    public List<Dict> findDicts(QueryRequest request, Dict dict) {
+    public IPage<Dict> findDicts(QueryRequest request, Dict dict) {
         try {
-            Example example = new Example(Dict.class);
-            Criteria criteria = example.createCriteria();
+            LambdaQueryWrapper<Dict> queryWrapper = new LambdaQueryWrapper<>();
+
             if (StringUtils.isNotBlank(dict.getKeyy())) {
-                criteria.andCondition("keyy=", Long.valueOf(dict.getKeyy()));
+                queryWrapper.eq(Dict::getKeyy, dict.getKeyy());
             }
             if (StringUtils.isNotBlank(dict.getValuee())) {
-                criteria.andCondition("valuee=", dict.getValuee());
+                queryWrapper.eq(Dict::getValuee, dict.getValuee());
             }
             if (StringUtils.isNotBlank(dict.getTableName())) {
-                criteria.andCondition("table_name=", dict.getTableName());
+                queryWrapper.eq(Dict::getTableName, dict.getTableName());
             }
             if (StringUtils.isNotBlank(dict.getFieldName())) {
-                criteria.andCondition("field_name=", dict.getFieldName());
+                queryWrapper.eq(Dict::getFieldName, dict.getFieldName());
             }
-            return this.selectByExample(example);
+
+            Page<Dict> page = new Page<>();
+            SortUtil.handlePageSort(request, page, true);
+            return this.page(page, queryWrapper);
         } catch (Exception e) {
             log.error("获取字典信息失败", e);
-            return new ArrayList<>();
+            return null;
         }
     }
 
@@ -54,13 +59,13 @@ public class DictServiceImpl extends BaseService<Dict> implements DictService {
     @Override
     @Transactional
     public void updateDict(Dict dict) {
-        this.updateNotNull(dict);
+        this.baseMapper.updateById(dict);
     }
 
     @Override
     @Transactional
     public void deleteDicts(String[] dictIds) {
         List<String> list = Arrays.asList(dictIds);
-        this.batchDelete(list, "dictId", Dict.class);
+        this.baseMapper.deleteBatchIds(list);
     }
 }

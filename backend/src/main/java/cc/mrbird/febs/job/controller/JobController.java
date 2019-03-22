@@ -6,6 +6,7 @@ import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.job.domain.Job;
 import cc.mrbird.febs.job.service.JobService;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -34,7 +35,7 @@ public class JobController extends BaseController {
     @GetMapping
     @RequiresPermissions("job:view")
     public Map<String, Object> jobList(QueryRequest request, Job job) {
-        return super.selectByPageNumSize(request, () -> this.jobService.findJobs(request, job));
+        return getDataTable(this.jobService.findJobs(request, job));
     }
 
     @GetMapping("cron/check")
@@ -64,7 +65,7 @@ public class JobController extends BaseController {
     @RequiresPermissions("job:delete")
     public void deleteJob(@NotBlank(message = "{required}") @PathVariable String jobIds) throws FebsException {
         try {
-            String[] ids = jobIds.split(",");
+            String[] ids = jobIds.split(StringPool.COMMA);
             this.jobService.deleteJobs(ids);
         } catch (Exception e) {
             message = "删除定时任务失败";
@@ -127,9 +128,9 @@ public class JobController extends BaseController {
 
     @PostMapping("excel")
     @RequiresPermissions("job:export")
-    public void export(Job job, QueryRequest request, HttpServletResponse response) throws FebsException {
+    public void export(QueryRequest request, Job job, HttpServletResponse response) throws FebsException {
         try {
-            List<Job> jobs = this.jobService.findJobs(request, job);
+            List<Job> jobs = this.jobService.findJobs(request, job).getRecords();
             ExcelKit.$Export(Job.class, response).downXlsx(jobs, false);
         } catch (Exception e) {
             message = "导出Excel失败";

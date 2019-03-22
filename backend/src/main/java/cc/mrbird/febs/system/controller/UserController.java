@@ -9,6 +9,7 @@ import cc.mrbird.febs.system.domain.User;
 import cc.mrbird.febs.system.domain.UserConfig;
 import cc.mrbird.febs.system.service.UserConfigService;
 import cc.mrbird.febs.system.service.UserService;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -48,8 +49,8 @@ public class UserController extends BaseController {
 
     @GetMapping
     @RequiresPermissions("user:view")
-    public Map<String, Object> userList(QueryRequest request, User user) {
-        return super.selectByPageNumSize(request, () -> this.userService.findUserDetail(user, request));
+    public Map<String, Object> userList(QueryRequest queryRequest, User user) {
+        return getDataTable(userService.findUserDetail(user, queryRequest));
     }
 
     @Log("新增用户")
@@ -83,7 +84,7 @@ public class UserController extends BaseController {
     @RequiresPermissions("user:delete")
     public void deleteUsers(@NotBlank(message = "{required}") @PathVariable String userIds) throws FebsException {
         try {
-            String[] ids = userIds.split(",");
+            String[] ids = userIds.split(StringPool.COMMA);
             this.userService.deleteUsers(ids);
         } catch (Exception e) {
             message = "删除用户失败";
@@ -156,7 +157,7 @@ public class UserController extends BaseController {
     @RequiresPermissions("user:reset")
     public void resetPassword(@NotBlank(message = "{required}") String usernames) throws FebsException {
         try {
-            String[] usernameArr = usernames.split(",");
+            String[] usernameArr = usernames.split(StringPool.COMMA);
             this.userService.resetPassword(usernameArr);
         } catch (Exception e) {
             message = "重置用户密码失败";
@@ -167,9 +168,9 @@ public class UserController extends BaseController {
 
     @PostMapping("excel")
     @RequiresPermissions("user:export")
-    public void export(User user, QueryRequest request, HttpServletResponse response) throws FebsException {
+    public void export(QueryRequest queryRequest, User user, HttpServletResponse response) throws FebsException {
         try {
-            List<User> users = this.userService.findUserDetail(user, request);
+            List<User> users = this.userService.findUserDetail(user, queryRequest).getRecords();
             ExcelKit.$Export(User.class, response).downXlsx(users, false);
         } catch (Exception e) {
             message = "导出Excel失败";

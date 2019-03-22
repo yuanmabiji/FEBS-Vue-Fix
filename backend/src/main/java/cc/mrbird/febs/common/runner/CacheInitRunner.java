@@ -2,12 +2,13 @@ package cc.mrbird.febs.common.runner;
 
 import cc.mrbird.febs.common.exception.RedisConnectException;
 import cc.mrbird.febs.common.service.CacheService;
-import cc.mrbird.febs.system.dao.UserMapper;
 import cc.mrbird.febs.system.domain.User;
 import cc.mrbird.febs.system.manager.UserManager;
+import cc.mrbird.febs.system.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -18,10 +19,10 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class CacheInitRunner implements CommandLineRunner {
+public class CacheInitRunner implements ApplicationRunner {
 
     @Autowired
-    private UserMapper userMapper;
+    private UserService userService;
 
     @Autowired
     private CacheService cacheService;
@@ -32,14 +33,14 @@ public class CacheInitRunner implements CommandLineRunner {
     private ConfigurableApplicationContext context;
 
     @Override
-    public void run(String... args) {
+    public void run(ApplicationArguments args) {
         try {
             log.info("Redis连接中 ······");
             cacheService.testConnect();
 
             log.info("缓存初始化 ······");
             log.info("缓存用户数据 ······");
-            List<User> list = this.userMapper.findUserDetail(null);
+            List<User> list = this.userService.list();
             for (User user : list) {
                 userManager.loadUserRedisCache(user);
             }

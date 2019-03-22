@@ -8,6 +8,7 @@ import cc.mrbird.febs.system.domain.Role;
 import cc.mrbird.febs.system.domain.RoleMenu;
 import cc.mrbird.febs.system.service.RoleMenuServie;
 import cc.mrbird.febs.system.service.RoleService;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -37,8 +38,8 @@ public class RoleController extends BaseController {
 
     @GetMapping
     @RequiresPermissions("role:view")
-    public Map<String, Object> roleList(QueryRequest request, Role role) {
-        return super.selectByPageNumSize(request, () -> this.roleService.findRoles(role, request));
+    public Map<String, Object> roleList(QueryRequest queryRequest, Role role) {
+        return getDataTable(roleService.findRoles(role, queryRequest));
     }
 
     @GetMapping("check/{roleName}")
@@ -48,7 +49,7 @@ public class RoleController extends BaseController {
     }
 
     @GetMapping("menu/{roleId}")
-    public List<String> getRoleMenus(@NotBlank(message = "{required}") @PathVariable String roleId){
+    public List<String> getRoleMenus(@NotBlank(message = "{required}") @PathVariable String roleId) {
         List<RoleMenu> list = this.roleMenuServie.getRoleMenusByRoleId(roleId);
         return list.stream().map(roleMenu -> String.valueOf(roleMenu.getMenuId())).collect(Collectors.toList());
     }
@@ -71,7 +72,7 @@ public class RoleController extends BaseController {
     @RequiresPermissions("role:delete")
     public void deleteRoles(@NotBlank(message = "{required}") @PathVariable String roleIds) throws FebsException {
         try {
-            String[] ids = roleIds.split(",");
+            String[] ids = roleIds.split(StringPool.COMMA);
             this.roleService.deleteRoles(ids);
         } catch (Exception e) {
             message = "删除角色失败";
@@ -95,9 +96,9 @@ public class RoleController extends BaseController {
 
     @PostMapping("excel")
     @RequiresPermissions("role:export")
-    public void export(Role role, QueryRequest request, HttpServletResponse response) throws FebsException {
+    public void export(QueryRequest queryRequest, Role role, HttpServletResponse response) throws FebsException {
         try {
-            List<Role> roles = this.roleService.findRoles(role, request);
+            List<Role> roles = this.roleService.findRoles(role, queryRequest).getRecords();
             ExcelKit.$Export(Role.class, response).downXlsx(roles, false);
         } catch (Exception e) {
             message = "导出Excel失败";
