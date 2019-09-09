@@ -221,7 +221,8 @@ export default {
         dataIndex: 'operation',
         scopedSlots: { customRender: 'operation' }
       }]
-    }
+    },
+    userProfileUpdate: state => state.$store.state.account.user
   },
   mounted () {
     this.fetch()
@@ -419,6 +420,16 @@ export default {
         // 数据加载完毕，关闭loading
         this.loading = false
       })
+    }
+  },
+  watch: {
+    userProfileUpdate: {
+      handler (newValue, oldValue) {
+        if (newValue.email !== oldValue.email || newValue.mobile !== oldValue.mobile || newValue.description !== oldValue.description || newValue.ssex !== oldValue.ssex || newValue.avatar !== oldValue.avatar || newValue.deptId !== oldValue.deptId) {
+          this.fetch()
+        }
+      },
+      deep: true
     }
   }
 }
