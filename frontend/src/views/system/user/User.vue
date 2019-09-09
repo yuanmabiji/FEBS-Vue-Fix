@@ -425,8 +425,11 @@ export default {
   watch: {
     userProfileUpdate: {
       handler (newValue, oldValue) {
-        if (newValue.email !== oldValue.email || newValue.mobile !== oldValue.mobile || newValue.description !== oldValue.description || newValue.ssex !== oldValue.ssex || newValue.avatar !== oldValue.avatar || newValue.deptId !== oldValue.deptId) {
-          this.fetch()
+        let permission = this.$store.state.account.permissions.filter(permission => permission === 'user:view')
+        if (typeof permission !== 'undefined' && permission !== null) {
+          if (newValue.email !== oldValue.email || newValue.mobile !== oldValue.mobile || newValue.description !== oldValue.description || newValue.ssex !== oldValue.ssex || newValue.avatar !== oldValue.avatar || newValue.deptId !== oldValue.deptId) {
+            this.fetch()
+          }
         }
       },
       deep: true
