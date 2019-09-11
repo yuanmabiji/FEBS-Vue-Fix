@@ -39,8 +39,8 @@ public class UserController extends BaseController {
     private UserService userService;
     @Autowired
     private UserConfigService userConfigService;
-    @Autowired
-    private RoleService roleService;
+//    @Autowired
+//    private RoleService roleService;
 
     @GetMapping("check/{username}")
     public boolean checkUserName(@NotBlank(message = "{required}") @PathVariable String username) {
@@ -49,13 +49,8 @@ public class UserController extends BaseController {
 
     @GetMapping("/{username}")
     public User detail(@NotBlank(message = "{required}") @PathVariable String username) {
-        User user=this.userService.findByName(username);
-        //修复用户修改自己的个人信息第二次提示roleId不能为空
-        List<Role> roles=roleService.findUserRole(username);
-        List<Long> roleIds=roles.stream().map(role ->role.getRoleId()).collect(Collectors.toList());
-        String roleIdStr=StringUtils.join(roleIds.toArray(new Long[roleIds.size()]),",");
-        user.setRoleId(roleIdStr);
-        return user;
+        //UserServiceImpl中findByName方法改为调用baseMapper.findDetail(username)
+        return this.userService.findByName(username);
     }
 
     @GetMapping
