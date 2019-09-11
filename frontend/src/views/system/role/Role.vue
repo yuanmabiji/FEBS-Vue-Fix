@@ -215,10 +215,10 @@ export default {
         content: '当您点击确定按钮后，这些记录将会被彻底删除',
         centered: true,
         onOk () {
-          let roleIds = []
-          let selectedRowKeysStr = ',' + that.selectedRowKeys.join(',') + ','
-          roleIds.push(that.dataSource.filter(f => { return selectedRowKeysStr.indexOf(',' + f.roleId + ',') > -1 }).map(m => { return m.roleId }))
-          that.$delete('role/' + roleIds.join(',')).then(() => {
+          let roleIds = that.selectedRowKeys.join(',')
+          // let selectedRowKeysStr = ',' + that.selectedRowKeys.join(',') + ','
+          // roleIds.push(that.dataSource.filter(f => { return selectedRowKeysStr.indexOf(',' + f.roleId + ',') > -1 }).map(m => { return m.roleId }))
+          that.$delete('role/' + roleIds).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.search()
