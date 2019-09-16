@@ -15,7 +15,7 @@ Router.prototype.push = function push (location) {
   // 改写为try catch包裹的方式 see https://stackoverflow.com/questions/56438111/how-to-fix-error-typeerror-cannot-read-property-catch-of-undefined-when-s
   // 引用一段话.catch can be used on promise. as you are not returning any promise here(or anything at all), its like using .catch on undefined. Use try catch instead
   try {
-    return originalPush.call(this, location).catch(err => { if (typeof err !== 'undefined')console.log(err) })
+    return originalPush.call(this, location)
   } catch (err) { if (typeof err !== 'undefined')console.log(err) }
 }
 Vue.use(Router)
