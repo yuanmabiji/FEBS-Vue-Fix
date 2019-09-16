@@ -113,6 +113,7 @@ import DeptInputTree from '../dept/DeptInputTree'
 import RangeDate from '@/components/datetime/RangeDate'
 import UserAdd from './UserAdd'
 import UserEdit from './UserEdit'
+import {mapState} from 'vuex'
 
 export default {
   name: 'User',
@@ -148,6 +149,9 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      currentUser: state => state.account.user
+    }),
     columns () {
       let { sortedInfo, filteredInfo } = this
       sortedInfo = sortedInfo || {}
@@ -240,6 +244,10 @@ export default {
     },
     view (record) {
       this.userInfo.data = record
+      // 当前用户的头像优先取缓存里的
+      if (this.userInfo.data.username === this.currentUser.username && this.userInfo.data.avatar !== this.currentUser.avatar) {
+        this.userInfo.data.avatar = this.currentUser.avatar
+      }
       this.userInfo.visiable = true
     },
     add () {
@@ -427,7 +435,7 @@ export default {
       handler (newValue, oldValue) {
         let permission = this.$store.state.account.permissions.filter(permission => permission === 'user:view')
         if (typeof permission !== 'undefined' && permission !== null) {
-          if (newValue.email !== oldValue.email || newValue.mobile !== oldValue.mobile || newValue.description !== oldValue.description || newValue.ssex !== oldValue.ssex || newValue.avatar !== oldValue.avatar || newValue.deptId !== oldValue.deptId) {
+          if (newValue.email !== oldValue.email || newValue.mobile !== oldValue.mobile || newValue.description !== oldValue.description || newValue.ssex !== oldValue.ssex || newValue.deptId !== oldValue.deptId) {
             this.fetch()
           }
         }
