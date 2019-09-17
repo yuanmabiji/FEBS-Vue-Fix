@@ -1,7 +1,6 @@
 import { message } from 'ant-design-vue/es'
 
 let lessNodesAppended
-
 const updateTheme = primaryColor => {
   if (!primaryColor) {
     return
@@ -31,8 +30,9 @@ const updateTheme = primaryColor => {
     const lessStyleNode = document.createElement('link')
     const lessConfigNode = document.createElement('script')
     const lessScriptNode = document.createElement('script')
+    let ctx = window.document.location.pathname === '/' ? '' : window.document.location.pathname
     lessStyleNode.setAttribute('rel', 'stylesheet/less')
-    lessStyleNode.setAttribute('href', '/static/less/Color.less')
+    lessStyleNode.setAttribute('href', ctx + '/static/less/Color.less')
     lessConfigNode.innerHTML = `
       window.less = {
         async: true,
@@ -40,7 +40,8 @@ const updateTheme = primaryColor => {
         javascriptEnabled: true
       }
     `
-    lessScriptNode.src = 'https://cdn.bootcss.com/less.js/3.9.0/less.min.js'
+    // https://cdn.bootcss.com/less.js/3.9.0/less.min.js
+    lessScriptNode.src = ctx + '/static/less/less.min.js'
     lessScriptNode.async = true
     lessScriptNode.onload = () => {
       buildIt()
