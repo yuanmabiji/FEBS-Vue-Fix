@@ -47,10 +47,10 @@
             AND d.dept_id = #{user.deptId}
         </if>
         <if test="user.createTimeFrom != null and user.createTimeFrom !=''">
-            And u.create_time &gt; #{user.createTimeFrom}
+            And u.create_time &gt;= str_to_date(#{user.createTimeFrom},'%Y-%m-%d %H:%i:%s')
         </if>
         <if test="user.createTimeTo!= null and user.createTimeTo !=''">
-            And u.create_time &lt; #{user.createTimeTo}
+            And u.create_time &lt;= str_to_date(#{user.createTimeTo},'%Y-%m-%d %H:%i:%s')
         </if>
         <if test="user.ssex != null and user.ssex != ''">
             AND u.ssex = #{user.ssex}
