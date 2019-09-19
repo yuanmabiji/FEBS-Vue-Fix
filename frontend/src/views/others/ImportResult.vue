@@ -49,15 +49,16 @@
                  :columns="successColumns"
                  :dataSource="importData"
                  :pagination="pagination"
-                 :scroll="{ x: 900 }">
+                 :scroll="scroll">
         </a-table>
       </a-tab-pane>
       <a-tab-pane tab="失败记录" key="2" v-if="errors.length">
         <a-table ref="errorTable"
+                 :rowKey="(key,index) => index"
                  :columns="errorColumns"
                  :dataSource="errorsData"
                  :pagination="pagination"
-                 :scroll="{ x: 900 }">
+                 :scroll="scroll">
         </a-table>
       </a-tab-pane>
     </a-tabs>
@@ -89,6 +90,9 @@ export default {
         showQuickJumper: true,
         showSizeChanger: true,
         showTotal: (total, range) => `显示 ${range[0]} ~ ${range[1]} 条记录，共 ${total} 条记录`
+      },
+      scroll: {
+        x: 900
       }
     }
   },
