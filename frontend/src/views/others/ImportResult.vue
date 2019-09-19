@@ -46,6 +46,7 @@
     <a-tabs defaultActiveKey="1">
       <a-tab-pane tab="成功记录" key="1" v-if="importData.length">
         <a-table ref="successTable"
+                 :rowKey="(key,index) => index"
                  :columns="successColumns"
                  :dataSource="importData"
                  :pagination="pagination"
