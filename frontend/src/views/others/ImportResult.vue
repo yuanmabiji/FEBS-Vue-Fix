@@ -43,7 +43,7 @@
         </a-alert>
       </span>
     </div>
-    <a-tabs defaultActiveKey="1">
+    <a-tabs defaultActiveKey="1" :activeKey="activeKey" @tabClick="handelTabClick">
       <a-tab-pane tab="成功记录" key="1" v-if="importData.length">
         <a-table ref="successTable"
                  :rowKey="(key,index) => index"
@@ -94,7 +94,8 @@ export default {
       },
       scroll: {
         x: 900
-      }
+      },
+      activeKey: '1'
     }
   },
   computed: {
@@ -158,6 +159,22 @@ export default {
   methods: {
     handleCancel () {
       this.$emit('close')
+    },
+    handelTabClick (i) {
+      this.activeKey = i
+    }
+  },
+  watch: {
+    importData: {
+      handler (newVal, oldVal) {
+        if (newVal.length) {
+          this.activeKey = '1'
+        } else if (this.errors.length) {
+          this.activeKey = '2'
+        } else {
+          this.activeKey = '1'
+        }
+      }
     }
   }
 }
