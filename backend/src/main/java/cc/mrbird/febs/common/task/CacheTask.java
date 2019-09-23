@@ -25,7 +25,7 @@ public class CacheTask {
     public void run() {
         try {
             String now = DateUtil.formatFullTime(LocalDateTime.now());
-            redisService.zremrangeByScore(FebsConstant.ACTIVE_USERS_ZSET_PREFIX, "-inf", now);
+            redisService.zremRangeByScore(FebsConstant.ACTIVE_USERS_ZSET_PREFIX, DateUtil.minDate(), now);
             log.info("delete expired user");
         } catch (Exception ignore) {
         }

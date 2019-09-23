@@ -51,9 +51,8 @@ public interface RedisService {
      *
      * @param key   key
      * @param value value
-     * @return String
      */
-    String set(String key, String value) throws RedisConnectException;
+    void set(String key, String value) throws RedisConnectException;
 
     /**
      * set 命令
@@ -61,9 +60,8 @@ public interface RedisService {
      * @param key         key
      * @param value       value
      * @param milliscends 毫秒
-     * @return String
      */
-    String set(String key, String value, Long milliscends) throws RedisConnectException;
+    void set(String key, String value, Long milliscends) throws RedisConnectException;
 
     /**
      * del命令
@@ -96,7 +94,7 @@ public interface RedisService {
      * @param milliscends 毫秒
      * @return Long
      */
-    Long pexpire(String key, Long milliscends) throws RedisConnectException;
+    Boolean pexpire(String key, Long milliscends);
 
 
     /**
@@ -106,7 +104,7 @@ public interface RedisService {
      * @param score  score
      * @param member value
      */
-    Long zadd(String key, Double score, String member) throws RedisConnectException;
+    Boolean zadd(String key, Double score, String member);
 
     /**
      * zrangeByScore 命令
@@ -126,7 +124,7 @@ public interface RedisService {
      * @param end   end
      * @return Long
      */
-    Long zremrangeByScore(String key, String start, String end) throws RedisConnectException;
+    Long zremRangeByScore(String key, String start, String end) throws RedisConnectException;
 
     /**
      * zrem 命令

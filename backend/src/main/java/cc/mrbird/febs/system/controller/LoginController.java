@@ -110,7 +110,7 @@ public class LoginController {
     @GetMapping("online")
     public FebsResponse userOnline(String username) throws Exception {
         String now = DateUtil.formatFullTime(LocalDateTime.now());
-        Set<String> userOnlineStringSet = redisService.zrangeByScore(FebsConstant.ACTIVE_USERS_ZSET_PREFIX, now, "+inf");
+        Set<String> userOnlineStringSet = redisService.zrangeByScore(FebsConstant.ACTIVE_USERS_ZSET_PREFIX, now, DateUtil.maxDate());
         List<ActiveUser> activeUsers = new ArrayList<>();
         for (String userOnlineString : userOnlineStringSet) {
             ActiveUser activeUser = mapper.readValue(userOnlineString, ActiveUser.class);
@@ -129,7 +129,7 @@ public class LoginController {
     @RequiresPermissions("user:kickout")
     public void kickout(@NotBlank(message = "{required}") @PathVariable String id) throws Exception {
         String now = DateUtil.formatFullTime(LocalDateTime.now());
-        Set<String> userOnlineStringSet = redisService.zrangeByScore(FebsConstant.ACTIVE_USERS_ZSET_PREFIX, now, "+inf");
+        Set<String> userOnlineStringSet = redisService.zrangeByScore(FebsConstant.ACTIVE_USERS_ZSET_PREFIX, now, DateUtil.maxDate());
         ActiveUser kickoutUser = null;
         String kickoutUserString = "";
         for (String userOnlineString : userOnlineStringSet) {

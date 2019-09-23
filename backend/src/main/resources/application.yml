@@ -41,14 +41,15 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-    password: 
-    jedis:
+    password:
+    lettuce:
       pool:
         min-idle: 8
         max-idle: 500
         max-active: 2000
         max-wait: 10000
-    timeout: 0
+      shutdown-timeout: 100
+    timeout: 5000
 
 
 #mybatis plus 设置

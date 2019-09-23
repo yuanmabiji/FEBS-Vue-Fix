@@ -2,15 +2,17 @@ package cc.mrbird.febs.common.service.impl;
 
 import cc.mrbird.febs.common.domain.RedisInfo;
 import cc.mrbird.febs.common.exception.RedisConnectException;
-import cc.mrbird.febs.common.function.JedisExecutor;
 import cc.mrbird.febs.common.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Client;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Redis 工具类，只封装了几个常用的 redis 命令，
@@ -20,35 +22,18 @@ import java.util.*;
  */
 @Service("redisService")
 public class RedisServiceImpl implements RedisService {
-
     @Autowired
-    JedisPool jedisPool;
-
+    private RedisTemplate<String,String> redisTemplate;
     private static String separator = System.getProperty("line.separator");
 
-    /**
-     * 处理 jedis请求
-     *
-     * @param j 处理逻辑，通过 lambda行为参数化
-     * @return 处理结果
-     */
-    private <T> T excuteByJedis(JedisExecutor<Jedis, T> j) throws RedisConnectException {
-        try (Jedis jedis = jedisPool.getResource()) {
-            return j.excute(jedis);
-        } catch (Exception e) {
+    @Override
+    public List<RedisInfo> getRedisInfo() throws RedisConnectException{
+        try{
+
+        }catch (Exception e){
             throw new RedisConnectException(e.getMessage());
         }
-    }
-
-    @Override
-    public List<RedisInfo> getRedisInfo() throws RedisConnectException {
-        String info = this.excuteByJedis(
-                j -> {
-                    Client client = j.getClient();
-                    client.info();
-                    return client.getBulkReply();
-                }
-        );
+        String info = redisTemplate.execute((RedisCallback<String>) redisConnection -> redisConnection.execute("info").toString());
         List<RedisInfo> infoList = new ArrayList<>();
         String[] strs = Objects.requireNonNull(info).split(separator);
         RedisInfo redisInfo;
@@ -69,14 +54,8 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public Map<String, Object> getKeysSize() throws RedisConnectException {
-        Long dbSize = this.excuteByJedis(
-                j -> {
-                    Client client = j.getClient();
-                    client.dbSize();
-                    return client.getIntegerReply();
-                }
-        );
+    public Map<String, Object> getKeysSize() {
+        Long dbSize = redisTemplate.execute((RedisCallback<Long>) redisConnection -> redisConnection.dbSize());
         Map<String, Object> map = new HashMap<>();
         map.put("create_time", System.currentTimeMillis());
         map.put("dbSize", dbSize);
@@ -84,14 +63,8 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public Map<String, Object> getMemoryInfo() throws RedisConnectException {
-        String info = this.excuteByJedis(
-                j -> {
-                    Client client = j.getClient();
-                    client.info();
-                    return client.getBulkReply();
-                }
-        );
+    public Map<String, Object> getMemoryInfo() {
+        String info = redisTemplate.execute((RedisCallback<String>) redisConnection -> redisConnection.execute("info").toString());
         String[] strs = Objects.requireNonNull(info).split(separator);
         Map<String, Object> map = null;
         for (String s : strs) {
@@ -107,65 +80,77 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public Set<String> getKeys(String pattern) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.keys(pattern));
+    public Set<String> getKeys(String pattern) {
+        return redisTemplate.keys(pattern);
     }
 
     @Override
-    public String get(String key) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.get(key.toLowerCase()));
+    public String get(String key) {
+        return redisTemplate.opsForValue().get(key);
     }
 
     @Override
-    public String set(String key, String value) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.set(key.toLowerCase(), value));
+    public void set(String key, String value) {
+         redisTemplate.opsForValue().set(key,value);
     }
 
     @Override
-    public String set(String key, String value, Long milliscends) throws RedisConnectException {
-        String result = this.set(key.toLowerCase(), value);
-        this.pexpire(key, milliscends);
-        return result;
+    public void set(String key, String value, Long milliscends) {
+        redisTemplate.opsForValue().set(key,value,milliscends, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public Long del(String... key) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.del(key));
+    public Long del(String... key) {
+        return redisTemplate.delete(Arrays.asList(key));
     }
 
     @Override
-    public Boolean exists(String key) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.exists(key));
+    public Boolean exists(String key) {
+        return redisTemplate.execute((RedisCallback<Boolean>) redisConnection ->{
+            RedisSerializer<String> serializer = redisTemplate.getStringSerializer();
+            return redisConnection.exists(serializer.serialize(key));
+        });
     }
 
     @Override
-    public Long pttl(String key) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.pttl(key));
+    public Long pttl(String key) {
+        return redisTemplate.execute((RedisCallback<Long>) redisConnection ->{
+            RedisSerializer<String> serializer = redisTemplate.getStringSerializer();
+            return redisConnection.pTtl(serializer.serialize(key));
+        });
     }
 
     @Override
-    public Long pexpire(String key, Long milliseconds) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.pexpire(key, milliseconds));
+    public Boolean pexpire(String key, Long milliseconds) {
+        return redisTemplate.expire(key,milliseconds, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public Long zadd(String key, Double score, String member) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.zadd(key, score, member));
+    public Boolean zadd(String key, Double score, String member) {
+        return redisTemplate.opsForZSet().add(key,member,score);
     }
 
     @Override
-    public Set<String> zrangeByScore(String key, String min, String max) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.zrangeByScore(key, min, max));
+    public Set<String> zrangeByScore(String key, String min, String max) {
+        return redisTemplate.opsForZSet().rangeByScore(key, Double.parseDouble(min),Double.parseDouble(max));
+//        return redisTemplate.execute((RedisCallback<Set<String>>) redisConnection ->{
+//            RedisSerializer<String> serializer = redisTemplate.getStringSerializer();
+//            return redisConnection.zRangeByScore(serializer.serialize(key),min,max).stream().map(b->serializer.deserialize(b)).collect(Collectors.toSet());
+//        });
     }
 
     @Override
-    public Long zremrangeByScore(String key, String start, String end) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.zremrangeByScore(key, start, end));
+    public Long zremRangeByScore(String key, String start, String end) {
+        return redisTemplate.opsForZSet().removeRangeByScore(key, Double.parseDouble(start),Double.parseDouble(end));
+//        return redisTemplate.execute((RedisCallback<Long>) redisConnection ->{
+//            RedisSerializer<String> serializer = redisTemplate.getStringSerializer();
+//            return redisConnection.zRemRangeByScore(serializer.serialize(key), RedisZSetCommands.Range.range().gte(start).lte(end));
+//        });
     }
 
     @Override
-    public Long zrem(String key, String... members) throws RedisConnectException {
-        return this.excuteByJedis(j -> j.zrem(key, members));
+    public Long zrem(String key, String... members) {
+        return redisTemplate.opsForZSet().remove(key,members);
     }
 
 }

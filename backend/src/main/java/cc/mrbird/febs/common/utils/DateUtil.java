@@ -1,5 +1,7 @@
 package cc.mrbird.febs.common.utils;
 
+import org.aspectj.apache.bcel.generic.RET;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -34,5 +36,11 @@ public class DateUtil {
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
         Date d = sdf.parse(date);
         return DateUtil.getDateFormat(d, format);
+    }
+    public static String maxDate(){
+        return "999991231235959";
+    }
+    public static String minDate(){
+        return "0";
     }
 }
