@@ -11,6 +11,16 @@ public class FebsResponse extends HashMap<String, Object> {
         return this;
     }
 
+    public FebsResponse code(String code) {
+        this.put("code", code);
+        return this;
+    }
+
+    public FebsResponse status(String status) {
+        this.put("status", status);
+        return this;
+    }
+
     public FebsResponse data(Object data) {
         this.put("data", data);
         return this;
