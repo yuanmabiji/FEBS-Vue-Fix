@@ -12,6 +12,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -42,7 +43,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 统一处理请求参数校验(实体对象传参)
+     * 统一处理请求参数校验(实体对象传参,form data方式)
      *
      * @param e BindException
      * @return FebsResponse
@@ -59,7 +60,24 @@ public class GlobalExceptionHandler {
         return new FebsResponse().message(message.toString());
 
     }
+    /**
+     * 统一处理请求参数校验(实体对象传参,request body方式)
+     *
+     * @param e MethodArgumentNotValidException
+     * @return FebsResponse
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public FebsResponse validExceptionHandler(MethodArgumentNotValidException e) {
+        StringBuilder message = new StringBuilder();
+        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+        for (FieldError error : fieldErrors) {
+            message.append(error.getField()).append(error.getDefaultMessage()).append(StringPool.COMMA);
+        }
+        message = new StringBuilder(message.substring(0, message.length() - 1));
+        return new FebsResponse().message(message.toString());
 
+    }
     /**
      * 统一处理请求参数校验(普通传参)
      *
