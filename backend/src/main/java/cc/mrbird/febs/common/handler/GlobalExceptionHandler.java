@@ -3,6 +3,7 @@ package cc.mrbird.febs.common.handler;
 import cc.mrbird.febs.common.domain.FebsResponse;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.common.exception.LimitAccessException;
+import cc.mrbird.febs.common.exception.code.Code;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -32,50 +33,37 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public FebsResponse handleException(Exception e) {
         log.error("系统内部异常，异常信息：", e);
-        return new FebsResponse().message("系统内部异常");
+        return new FebsResponse().message(Code.C500.getDesc()).code(Code.C500.getCode().toString()).status(ResponseStat.ERROR.getText());
     }
 
     @ExceptionHandler(value = FebsException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public FebsResponse handleParamsInvalidException(FebsException e) {
         log.error("系统错误：{}", e.getMessage());
-        return new FebsResponse().message(e.getMessage());
+        return new FebsResponse().message(e.getMessage()).code(Code.C500.getCode().toString()).status(ResponseStat.ERROR.getText());
     }
 
     /**
-     * 统一处理请求参数校验(实体对象传参,form data方式)
+     * 统一处理请求参数校验(实体对象传参,form data方式,request body方式)
      *
      * @param e BindException
      * @return FebsResponse
      */
-    @ExceptionHandler(BindException.class)
+    @ExceptionHandler({BindException.class,MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public FebsResponse validExceptionHandler(BindException e) {
+    public FebsResponse validExceptionHandler(Exception e) {
         StringBuilder message = new StringBuilder();
-        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
-        for (FieldError error : fieldErrors) {
-            message.append(error.getField()).append(error.getDefaultMessage()).append(StringPool.COMMA);
+        if(e instanceof BindException|| e instanceof MethodArgumentNotValidException){
+            List<FieldError> fieldErrors = e instanceof BindException?((BindException)e).getBindingResult().getFieldErrors():((MethodArgumentNotValidException)e).getBindingResult().getFieldErrors();
+            for (FieldError error : fieldErrors) {
+                message.append(error.getField()).append(error.getDefaultMessage()).append(StringPool.COMMA);
+            }
+            message = new StringBuilder(message.substring(0, message.length() - 1));
+        }else{
+            message.append(e.getMessage());
         }
-        message = new StringBuilder(message.substring(0, message.length() - 1));
-        return new FebsResponse().message(message.toString());
 
-    }
-    /**
-     * 统一处理请求参数校验(实体对象传参,request body方式)
-     *
-     * @param e MethodArgumentNotValidException
-     * @return FebsResponse
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public FebsResponse validExceptionHandler(MethodArgumentNotValidException e) {
-        StringBuilder message = new StringBuilder();
-        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
-        for (FieldError error : fieldErrors) {
-            message.append(error.getField()).append(error.getDefaultMessage()).append(StringPool.COMMA);
-        }
-        message = new StringBuilder(message.substring(0, message.length() - 1));
-        return new FebsResponse().message(message.toString());
+        return new FebsResponse().message(message.toString()).code(Code.C400.getCode().toString()).status(ResponseStat.ERROR.getText());
 
     }
     /**
@@ -95,19 +83,20 @@ public class GlobalExceptionHandler {
             message.append(pathArr[1]).append(violation.getMessage()).append(StringPool.COMMA);
         }
         message = new StringBuilder(message.substring(0, message.length() - 1));
-        return new FebsResponse().message(message.toString());
+        return new FebsResponse().message(message.toString()).code(Code.C400.getCode().toString()).status(ResponseStat.ERROR.getText());
     }
 
     @ExceptionHandler(value = LimitAccessException.class)
     @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
     public FebsResponse handleLimitAccessException(LimitAccessException e) {
         log.warn(e.getMessage());
-        return new FebsResponse().message(e.getMessage());
+        return new FebsResponse().message(e.getMessage()).code(Code.C429.getCode().toString()).status(ResponseStat.ERROR.getText());
     }
 
     @ExceptionHandler(value = UnauthorizedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public void handleUnauthorizedException(Exception e) {
+    public FebsResponse handleUnauthorizedException(Exception e) {
         log.error("权限不足，{}", e.getMessage());
+        return new FebsResponse().message(Code.C401.getDesc()).code(Code.C401.getCode().toString()).status(ResponseStat.ERROR.getText());
     }
 }
