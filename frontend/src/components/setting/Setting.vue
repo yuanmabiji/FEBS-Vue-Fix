@@ -112,7 +112,7 @@ export default {
         fixedSiderbar: this.fixedSiderbar ? '1' : '0',
         fixedHeader: this.fixedHeader ? '1' : '0',
         layout: this.layout,
-        color: this.color,
+        color: this.color[0],
         userId: this.user.userId
       }).then(() => {
         this.$message.success('保存成功')

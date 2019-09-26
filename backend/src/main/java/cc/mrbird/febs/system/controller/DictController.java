@@ -2,6 +2,7 @@ package cc.mrbird.febs.system.controller;
 
 import cc.mrbird.febs.common.annotation.Log;
 import cc.mrbird.febs.common.controller.BaseController;
+import cc.mrbird.febs.common.domain.FebsResponse;
 import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.system.domain.Dict;
@@ -40,11 +41,12 @@ public class DictController extends BaseController {
     @Log("新增字典")
     @PostMapping
     @RequiresPermissions("dict:add")
-    public void addDict(@Valid Dict dict) throws FebsException {
+    public FebsResponse addDict(@RequestBody @Valid Dict dict) throws FebsException {
         try {
             this.dictService.createDict(dict);
+            return new FebsResponse().code("200").message("新增字典成功").status("success");
         } catch (Exception e) {
-            message = "新增字典成功";
+            message = "新增字典失败";
             log.error(message, e);
             throw new FebsException(message);
         }
@@ -53,12 +55,13 @@ public class DictController extends BaseController {
     @Log("删除字典")
     @DeleteMapping("/{dictIds}")
     @RequiresPermissions("dict:delete")
-    public void deleteDicts(@NotBlank(message = "{required}") @PathVariable String dictIds) throws FebsException {
+    public FebsResponse deleteDicts(@NotBlank(message = "{required}") @PathVariable String dictIds) throws FebsException {
         try {
             String[] ids = dictIds.split(StringPool.COMMA);
             this.dictService.deleteDicts(ids);
+            return new FebsResponse().code("200").message("删除字典成功").status("success");
         } catch (Exception e) {
-            message = "删除字典成功";
+            message = "删除字典失败";
             log.error(message, e);
             throw new FebsException(message);
         }
@@ -67,11 +70,12 @@ public class DictController extends BaseController {
     @Log("修改字典")
     @PutMapping
     @RequiresPermissions("dict:update")
-    public void updateDict(@Valid Dict dict) throws FebsException {
+    public FebsResponse updateDict(@RequestBody @Valid Dict dict) throws FebsException {
         try {
             this.dictService.updateDict(dict);
+            return new FebsResponse().code("200").message("修改字典成功").status("success");
         } catch (Exception e) {
-            message = "修改字典成功";
+            message = "修改字典失败";
             log.error(message, e);
             throw new FebsException(message);
         }
@@ -79,7 +83,7 @@ public class DictController extends BaseController {
 
     @PostMapping("excel")
     @RequiresPermissions("dict:export")
-    public void export(QueryRequest request, Dict dict, HttpServletResponse response) throws FebsException {
+    public void export(QueryRequest request,@RequestBody Dict dict, HttpServletResponse response) throws FebsException {
         try {
             List<Dict> dicts = this.dictService.findDicts(request, dict).getRecords();
             ExcelKit.$Export(Dict.class, response).downXlsx(dicts, false);

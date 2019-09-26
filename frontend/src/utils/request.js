@@ -81,34 +81,44 @@ FEBS_REQUEST.interceptors.response.use((config) => {
 
 const request = {
   post (url, params) {
+    let contentType = (url.indexOf('login') > -1) || (url.indexOf('regist') > -1) ? 'application/x-www-form-urlencoded' : 'application/json'
     return FEBS_REQUEST.post(url, params, {
       transformRequest: [(params) => {
         let result = ''
-        Object.keys(params).forEach((key) => {
-          if (!Object.is(params[key], undefined) && !Object.is(params[key], null)) {
-            result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
-          }
-        })
+        if (url.indexOf('login') > -1 || url.indexOf('regist') > -1) {
+          Object.keys(params).forEach((key) => {
+            if (!Object.is(params[key], undefined) && !Object.is(params[key], null)) {
+              result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
+            }
+          })
+        } else {
+          result = JSON.stringify(params)
+        }
         return result
       }],
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': contentType
       }
     })
   },
   put (url, params) {
+    let contentType = (url.indexOf('login') > -1 || url.indexOf('avatar') > -1 || url.indexOf('password') > -1 || url.indexOf('password/reset') > -1) ? 'application/x-www-form-urlencoded' : 'application/json'
     return FEBS_REQUEST.put(url, params, {
       transformRequest: [(params) => {
         let result = ''
-        Object.keys(params).forEach((key) => {
-          if (!Object.is(params[key], undefined) && !Object.is(params[key], null)) {
-            result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
-          }
-        })
+        if (url.indexOf('login') > -1 || url.indexOf('avatar') > -1 || url.indexOf('password') > -1 || url.indexOf('password/reset') > -1) {
+          Object.keys(params).forEach((key) => {
+            if (!Object.is(params[key], undefined) && !Object.is(params[key], null)) {
+              result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
+            }
+          })
+        } else {
+          result = JSON.stringify(params)
+        }
         return result
       }],
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': contentType
       }
     })
   },
@@ -144,14 +154,17 @@ const request = {
     message.loading('导出数据中')
     return FEBS_REQUEST.post(url, params, {
       transformRequest: [(params) => {
-        let result = ''
-        Object.keys(params).forEach((key) => {
-          if (!Object.is(params[key], undefined) && !Object.is(params[key], null)) {
-            result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
-          }
-        })
-        return result
+        // let result = ''
+        // Object.keys(params).forEach((key) => {
+        //   if (!Object.is(params[key], undefined) && !Object.is(params[key], null)) {
+        //     result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
+        //   }
+        // })
+        return JSON.stringify(params)
       }],
+      headers: {
+        'Content-Type': 'application/json'
+      },
       responseType: 'blob'
     }).then((r) => {
       const content = r.data
