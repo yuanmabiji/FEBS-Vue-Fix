@@ -59,7 +59,7 @@ public class AesEncryptUtil {
      */
     public static String desEncrypt(String data, String key, String iv) {
         try {
-            byte[] encrypted1 = new Base64().decode(data);
+            byte[] encrypted1 = new Base64().decode(filter(data));
 
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             SecretKeySpec keyspec = new SecretKeySpec(key.getBytes(), "AES");
@@ -84,6 +84,16 @@ public class AesEncryptUtil {
 
     public static String desEncrypt(String data) {
         return desEncrypt(data, KEY, IV);
+    }
+
+    public static String filter(String value) {
+        value = value.replace("%23", "#")
+                .replace("%25", "%")
+                .replace("%26", "&")
+                .replace("%2B", "+")
+                .replace("%2F", "//")
+                .replace("%3F", "?");
+        return value;
     }
 
 }
