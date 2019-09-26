@@ -29,7 +29,7 @@ public class ArticleController {
                 param = "dev=1";
                 data = HttpUtil.sendSSLPost(FebsConstant.MRYW_TODAY_URL, param);
             }
-            return new FebsResponse().data(data);
+            return new FebsResponse().data(data).code("200").message("获取文章成功").status("success");
         } catch (Exception e) {
             String message = "获取文章失败";
             log.error(message, e);

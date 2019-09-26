@@ -52,7 +52,7 @@ public class LogController extends BaseController {
 
     @PostMapping("excel")
     @RequiresPermissions("log:export")
-    public void export(QueryRequest request, SysLog sysLog, HttpServletResponse response) throws FebsException {
+    public void export(QueryRequest request,@RequestBody SysLog sysLog, HttpServletResponse response) throws FebsException {
         try {
             List<SysLog> sysLogs = this.logService.findLogs(request, sysLog).getRecords();
             ExcelKit.$Export(SysLog.class, response).downXlsx(sysLogs, false);

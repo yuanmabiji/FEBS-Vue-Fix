@@ -24,7 +24,7 @@ public class MovieController {
     public FebsResponse getMoiveHot() throws FebsException {
         try {
             String data = HttpUtil.sendSSLPost(FebsConstant.TIME_MOVIE_HOT_URL, "locationId=328");
-            return new FebsResponse().data(data);
+            return new FebsResponse().data(data).code("200").message("获取热映影片信息成功").status("success");
         } catch (Exception e) {
             message = "获取热映影片信息失败";
             log.error(message, e);
@@ -36,7 +36,7 @@ public class MovieController {
     public FebsResponse getMovieComing() throws FebsException {
         try {
             String data = HttpUtil.sendSSLPost(FebsConstant.TIME_MOVIE_COMING_URL, "locationId=328");
-            return new FebsResponse().data(data);
+            return new FebsResponse().data(data).code("200").message("获取即将上映影片信息成功").status("success");
         } catch (Exception e) {
             message = "获取即将上映影片信息失败";
             log.error(message, e);
@@ -48,7 +48,7 @@ public class MovieController {
     public FebsResponse getDetail(@NotBlank(message = "{required}") String id) throws FebsException {
         try {
             String data = HttpUtil.sendSSLPost(FebsConstant.TIME_MOVIE_DETAIL_URL, "locationId=328&movieId=" + id);
-            return new FebsResponse().data(data);
+            return new FebsResponse().data(data).code("200").message("获取影片详情成功").status("success");
         } catch (Exception e) {
             message = "获取影片详情失败";
             log.error(message, e);
@@ -60,7 +60,7 @@ public class MovieController {
     public FebsResponse getComments(@NotBlank(message = "{required}") String id) throws FebsException {
         try {
             String data = HttpUtil.sendSSLPost(FebsConstant.TIME_MOVIE_COMMENTS_URL, "movieId=" + id);
-            return new FebsResponse().data(data);
+            return new FebsResponse().data(data).code("200").message("获取影片评论成功").status("success");
         } catch (Exception e) {
             message = "获取影片评论失败";
             log.error(message, e);

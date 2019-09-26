@@ -24,7 +24,7 @@ public class WeatherController {
     public FebsResponse queryWeather(@NotBlank(message = "{required}") String areaId) throws FebsException {
         try {
             String data = HttpUtil.sendPost(FebsConstant.MEIZU_WEATHER_URL, "cityIds=" + areaId);
-            return new FebsResponse().data(data);
+            return new FebsResponse().data(data).code("200").message("天气查询成功").status("success");
         } catch (Exception e) {
             String message = "天气查询失败";
             log.error(message, e);
