@@ -129,7 +129,7 @@ export default {
         if (!err) {
           let newPassword = this.form.getFieldValue('password')
           this.$put('user/password', {
-            password: newPassword,
+            password: this.$aesEncrypt.encrypt(newPassword),
             username: this.user.username
           }).then(() => {
             this.state.passwordLevelChecked = false
@@ -188,7 +188,7 @@ export default {
       let password = this.form.getFieldValue('oldPassword')
       if (typeof password !== 'undefined' && password.trim().length) {
         this.$get('user/password/check', {
-          password: password,
+          password: this.$aesEncrypt.encrypt(password),
           username: this.user.username
         }).then((r) => {
           if (r.data) {

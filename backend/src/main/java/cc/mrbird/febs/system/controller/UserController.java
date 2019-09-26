@@ -4,6 +4,7 @@ import cc.mrbird.febs.common.annotation.Log;
 import cc.mrbird.febs.common.controller.BaseController;
 import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
+import cc.mrbird.febs.common.utils.AesEncryptUtil;
 import cc.mrbird.febs.common.utils.MD5Util;
 import cc.mrbird.febs.system.domain.Role;
 import cc.mrbird.febs.system.domain.User;
@@ -138,7 +139,7 @@ public class UserController extends BaseController {
     public boolean checkPassword(
             @NotBlank(message = "{required}") String username,
             @NotBlank(message = "{required}") String password) {
-        String encryptPassword = MD5Util.encrypt(username, password);
+        String encryptPassword = MD5Util.encrypt(username, AesEncryptUtil.desEncrypt(password));
         User user = userService.findByName(username);
         if (user != null)
             return StringUtils.equals(user.getPassword(), encryptPassword);
@@ -151,7 +152,7 @@ public class UserController extends BaseController {
             @NotBlank(message = "{required}") String username,
             @NotBlank(message = "{required}") String password) throws FebsException {
         try {
-            userService.updatePassword(username, password);
+            userService.updatePassword(username, AesEncryptUtil.desEncrypt(password));
         } catch (Exception e) {
             message = "修改密码失败";
             log.error(message, e);

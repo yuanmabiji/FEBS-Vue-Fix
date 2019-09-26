@@ -6,6 +6,7 @@ import store from './store'
 import request from 'utils/request'
 import db from 'utils/localstorage'
 import VueApexCharts from 'vue-apexcharts'
+import AesEncrypt from 'utils/aesEncrypt'
 
 import 'ant-design-vue/dist/antd.css'
 
@@ -31,6 +32,7 @@ Vue.prototype.$delete = request.delete
 Vue.prototype.$export = request.export
 Vue.prototype.$download = request.download
 Vue.prototype.$upload = request.upload
+Vue.prototype.$aesEncrypt = AesEncrypt
 
 /* eslint-disable no-new */
 new Vue({
