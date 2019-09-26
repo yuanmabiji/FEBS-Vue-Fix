@@ -2,7 +2,7 @@
   <div class="user-layout-register">
     <a-form ref="formRegister" :form="form" id="formRegister">
       <a-form-item>
-        <a-input size="large" type="text" v-model="username" placeholder="账号" v-decorator="['email',{rules: [{ required: true, message: '请输入注册账号' },  { validator: this.handleUsernameCheck }], validateTrigger: ['change', 'blur']}]"></a-input>
+        <a-input size="large" type="text" placeholder="账号" v-decorator="['username',{rules: [{ required: true, message: '请输入注册账号' }, { validator: this.handleUsernameCheck }], validateTrigger: ['change', 'blur']}]"></a-input>
       </a-form-item>
       <a-popover placement="rightTop" trigger="click" :visible="state.passwordLevelChecked">
         <template slot="content">
@@ -15,7 +15,7 @@
           </div>
         </template>
         <a-form-item>
-          <a-input size="large" v-model="password" type="password" @click="handlePasswordInputClick" autocomplete="false"
+          <a-input size="large" type="password" @click="handlePasswordInputClick" autocomplete="false"
                    placeholder="至少6位密码" v-decorator="['password',{rules: [{ required: true, message: '至少6位密码'}, { validator: this.handlePasswordLevel }], validateTrigger: ['change', 'blur']}]"></a-input>
         </a-form-item>
       </a-popover>
@@ -107,7 +107,6 @@ export default {
   components: {},
   data () {
     return {
-      form: null,
       username: '',
       password: '',
       state: {
@@ -178,7 +177,8 @@ export default {
     },
 
     handleUsernameCheck (rule, value, callback) {
-      let username = this.username.trim()
+      let username = this.form.getFieldValue('username')
+      username = typeof username === 'undefined' ? '' : username.trim()
       if (username.length) {
         if (username.length > 10) {
           callback(new Error('用户名不能超过10个字符'))
@@ -215,8 +215,8 @@ export default {
       this.form.validateFields((err, values) => {
         if (!err) {
           this.$post('regist', {
-            username: this.username,
-            password: this.password
+            username: this.form.getFieldValue('username'),
+            password: this.form.getFieldValue('password')
           }).then(() => {
             this.$message.success('注册成功')
             this.returnLogin()
