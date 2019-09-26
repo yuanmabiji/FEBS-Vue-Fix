@@ -55,7 +55,7 @@ public class LoginController {
             @NotBlank(message = "{required}") String username,
             @NotBlank(message = "{required}") String password, HttpServletRequest request) throws Exception {
         username = StringUtils.lowerCase(username);
-        password = MD5Util.encrypt(username, password);
+        password = MD5Util.encrypt(username, AesEncryptUtil.desEncrypt(password));
 
         final String errorMessage = "用户名或密码错误";
         User user = this.userManager.getUser(username);

@@ -87,7 +87,7 @@ export default {
             let password = this.form.getFieldValue('password')
             this.$post('login', {
               username: name,
-              password: password
+              password: this.$aesEncrypt.encrypt(password)
             }).then((r) => {
               let data = r.data.data
               this.saveLoginData(data)

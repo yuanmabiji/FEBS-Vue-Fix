@@ -17,6 +17,7 @@
     "axios": "^0.18.0",
     "babel-polyfill": "^6.26.0",
     "browserslist": "^3.2.8",
+    "crypto-js": "^3.1.9-1",
     "date-fns": "^1.29.0",
     "enquire.js": "^2.1.6",
     "vue": "2.6.10",
