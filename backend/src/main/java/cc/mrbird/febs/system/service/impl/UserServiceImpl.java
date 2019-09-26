@@ -167,7 +167,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPassword(MD5Util.encrypt(username, password));
         user.setUsername(username);
         user.setCreateTime(new Date());
-        user.setStatus(User.STATUS_VALID);
+        user.setStatus(User.STATUS_LOCK);
         user.setSsex(User.SEX_UNKNOW);
         user.setAvatar(User.DEFAULT_AVATAR);
         user.setDescription("注册用户");
