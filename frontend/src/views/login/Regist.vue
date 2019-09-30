@@ -214,9 +214,10 @@ export default {
     handleSubmit () {
       this.form.validateFields((err, values) => {
         if (!err) {
+          let password = this.form.getFieldValue('password')
           this.$post('regist', {
             username: this.form.getFieldValue('username'),
-            password: this.form.getFieldValue('password')
+            password: this.$aesEncrypt.encrypt(password)
           }).then(() => {
             this.$message.success('注册成功')
             this.returnLogin()

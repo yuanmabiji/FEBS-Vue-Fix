@@ -3,6 +3,7 @@ package cc.mrbird.febs.system.service.impl;
 import cc.mrbird.febs.common.domain.FebsConstant;
 import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.service.CacheService;
+import cc.mrbird.febs.common.utils.AesEncryptUtil;
 import cc.mrbird.febs.common.utils.SortUtil;
 import cc.mrbird.febs.common.utils.MD5Util;
 import cc.mrbird.febs.system.dao.UserMapper;
@@ -164,10 +165,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional
     public void regist(String username, String password) throws Exception {
         User user = new User();
-        user.setPassword(MD5Util.encrypt(username, password));
+        user.setPassword(MD5Util.encrypt(username, AesEncryptUtil.desEncrypt(password)));
         user.setUsername(username);
         user.setCreateTime(new Date());
-        user.setStatus(User.STATUS_VALID);
+        user.setStatus(User.STATUS_LOCK);
         user.setSsex(User.SEX_UNKNOW);
         user.setAvatar(User.DEFAULT_AVATAR);
         user.setDescription("注册用户");
