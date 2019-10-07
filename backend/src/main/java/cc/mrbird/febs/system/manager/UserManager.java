@@ -119,7 +119,8 @@ public class UserManager {
      */
     public void loadUserRedisCache(User user) throws Exception {
         // 缓存用户
-        cacheService.saveUser(user.getUsername());
+//        cacheService.saveUser(user.getUsername());
+        cacheService.saveUser(user);
         // 缓存用户角色
         cacheService.saveRoles(user.getUsername());
         // 缓存用户权限
@@ -160,4 +161,7 @@ public class UserManager {
         }
     }
 
+    public String findSubordinates(String userId, String deptId) throws Exception{
+        return userService.findSubordinates(userId,deptId);
+    }
 }

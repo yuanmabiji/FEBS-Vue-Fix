@@ -25,6 +25,17 @@
           ]}]">
         </a-textarea>
       </a-form-item>
+      <a-form-item label='数据权限' v-bind="formItemLayout">
+        <a-radio-group
+          name="dataScope"
+          :options="[{label: '全部数据',value: 0},{label: '部门数据',value: 1},{label: '个人数据',value: 2}]"
+          v-decorator="[
+          'dataScope',
+          {rules: [
+            { required: true }
+          ]}]">
+        </a-radio-group>
+      </a-form-item>
       <a-form-item label='权限选择'
                    style="margin-bottom: 2rem"
                    :validateStatus="menuSelectStatus"
@@ -86,7 +97,8 @@ export default {
       role: {
         roleName: '',
         remark: '',
-        menuId: ''
+        menuId: '',
+        dataScope: ''
       },
       checkedKeys: [],
       expandedKeys: [],
@@ -183,7 +195,7 @@ export default {
       }
     },
     setRoleFields () {
-      let values = this.form.getFieldsValue(['roleName', 'remark'])
+      let values = this.form.getFieldsValue(['roleName', 'remark', 'dataScope'])
       if (typeof values !== 'undefined') {
         Object.keys(values).forEach(_key => { this.role[_key] = values[_key] })
       }

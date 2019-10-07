@@ -8,6 +8,7 @@ import cc.mrbird.febs.common.utils.SortUtil;
 import cc.mrbird.febs.common.utils.MD5Util;
 import cc.mrbird.febs.system.dao.UserMapper;
 import cc.mrbird.febs.system.dao.UserRoleMapper;
+import cc.mrbird.febs.system.domain.DeptUsers;
 import cc.mrbird.febs.system.domain.User;
 import cc.mrbird.febs.system.domain.UserRole;
 import cc.mrbird.febs.system.manager.UserManager;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service("userService")
@@ -88,6 +90,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 保存用户角色
         String[] roles = user.getRoleId().split(StringPool.COMMA);
         setUserRoles(user, roles);
+        //查询用户角色
 
         // 创建用户默认的个性化配置
         userConfigService.initDefaultUserConfig(String.valueOf(user.getUserId()));
@@ -181,6 +184,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 创建用户默认的个性化配置
         userConfigService.initDefaultUserConfig(String.valueOf(user.getUserId()));
+        //获取用户部门员工
+        user.setSubordinates(findSubordinates(String.valueOf(user.getUserId()),String.valueOf(user.getDeptId())));
         // 将用户相关信息保存到 Redis中
         userManager.loadUserRedisCache(user);
 
@@ -208,5 +213,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             ur.setRoleId(Long.valueOf(roleId));
             this.userRoleMapper.insert(ur);
         });
+    }
+    @Override
+    public String findSubordinates(String userId,String deptId){
+        return baseMapper.findSubordinates(userId,deptId);
+    }
+    @Override
+    public List<DeptUsers> findSubordinatesMap(){
+        return baseMapper.findSubordinatesMap();
     }
 }

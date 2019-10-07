@@ -111,4 +111,8 @@
             u.DESCRIPTION,
             u.LAST_LOGIN_TIME
     </select>
+    <select id="findSubordinates" resultType="user" parameterType="string">
+        SELECT GROUP_CONCAT(u.user_id) FROM
+        t_user u LEFT JOIN t_dept d ON u.dept_id = d.dept_id WHERE u.user_id = #{userId} AND (d.dept_id = #{deptId} OR d.parent_id = #{deptId})
+    </select>
 </mapper>
