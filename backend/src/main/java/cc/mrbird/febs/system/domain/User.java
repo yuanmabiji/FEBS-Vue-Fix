@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.wuwenze.poi.annotation.Excel;
 import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
-import lombok.ToString;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -123,6 +122,6 @@ public class User implements Serializable {
      * 下属
      * 所管理的人的id
      */
-    @TableField(exist = false)
-    private String subordinates;
+//    @TableField(exist = false)
+//    private String subordinates;
 }

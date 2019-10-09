@@ -156,12 +156,13 @@ public class UserManager {
                 cacheService.deleteUser(user.getUsername());
                 cacheService.deleteRoles(user.getUsername());
                 cacheService.deletePermissions(user.getUsername());
+                cacheService.deleteUserSubordinates(user.getDeptId());
             }
             cacheService.deleteUserConfigs(userId);
         }
     }
 
-    public String findSubordinates(String userId, String deptId) throws Exception{
-        return userService.findSubordinates(userId,deptId);
+    public String findSubordinates(Long deptId) throws Exception{
+        return userService.findSubordinates(deptId);
     }
 }

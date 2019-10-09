@@ -99,8 +99,6 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public void saveUser(String username) throws Exception {
         User user = userMapper.findDetail(username);
-        //获取用户部门员工
-        user.setSubordinates(userMapper.findSubordinates(String.valueOf(user.getUserId()),String.valueOf(user.getDeptId())));
         this.deleteUser(username);
         redisService.set(FebsConstant.USER_CACHE_PREFIX + username, mapper.writeValueAsString(user));
     }
@@ -154,5 +152,20 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public void deleteUserConfigs(String userId) throws Exception {
         redisService.del(FebsConstant.USER_CONFIG_CACHE_PREFIX + userId);
+    }
+
+    @Override
+    public String getUserSubordinates(Long deptId) throws Exception {
+        return redisService.get(FebsConstant.USER_PERMISSION_DEPT_DATA_CACHE_PREFIX+FebsConstant.UNDER_LINE+deptId);
+    }
+
+    @Override
+    public String saveUserSubordinates(Long deptId, String permissions) throws Exception {
+        return redisService.set(FebsConstant.USER_PERMISSION_DEPT_DATA_CACHE_PREFIX+FebsConstant.UNDER_LINE+deptId,permissions);
+    }
+
+    @Override
+    public void deleteUserSubordinates(Long deptId) throws Exception {
+        redisService.del(FebsConstant.USER_PERMISSION_DEPT_DATA_CACHE_PREFIX + FebsConstant.UNDER_LINE + deptId);
     }
 }

@@ -95,7 +95,7 @@ public interface UserService extends IService<User> {
      */
     void resetPassword(String[] usernames) throws Exception;
 
-    String findSubordinates(String userId,String deptId) throws Exception;
+    String findSubordinates(Long deptId) throws Exception;
 
     List<DeptUsers> findSubordinatesMap();
 }

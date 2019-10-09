@@ -97,6 +97,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 将用户相关信息保存到 Redis中
         userManager.loadUserRedisCache(user);
+        //更新用户所在部门缓存
+        cacheService.saveUserSubordinates(user.getDeptId(),findSubordinates(user.getDeptId()));
     }
 
     @Override
@@ -116,6 +118,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         cacheService.saveUser(user.getUsername());
         cacheService.saveRoles(user.getUsername());
         cacheService.savePermissions(user.getUsername());
+        //更新用户所在部门缓存
+        cacheService.saveUserSubordinates(user.getDeptId(),findSubordinates(user.getDeptId()));
     }
 
     @Override
@@ -140,6 +144,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         updateById(user);
         // 重新缓存用户信息
         cacheService.saveUser(user.getUsername());
+        //更新用户所在部门缓存
+        cacheService.saveUserSubordinates(user.getDeptId(),findSubordinates(user.getDeptId()));
     }
 
     @Override
@@ -185,10 +191,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 创建用户默认的个性化配置
         userConfigService.initDefaultUserConfig(String.valueOf(user.getUserId()));
         //获取用户部门员工
-        user.setSubordinates(findSubordinates(String.valueOf(user.getUserId()),String.valueOf(user.getDeptId())));
         // 将用户相关信息保存到 Redis中
         userManager.loadUserRedisCache(user);
-
+        //更新用户所在部门缓存
+        cacheService.saveUserSubordinates(user.getDeptId(),findSubordinates(user.getDeptId()));
     }
 
     @Override
@@ -215,8 +221,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         });
     }
     @Override
-    public String findSubordinates(String userId,String deptId){
-        return baseMapper.findSubordinates(userId,deptId);
+    public String findSubordinates(Long deptId){
+        return baseMapper.findSubordinates(deptId);
     }
     @Override
     public List<DeptUsers> findSubordinatesMap(){
