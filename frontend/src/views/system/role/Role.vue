@@ -251,7 +251,7 @@ export default {
         sortField = sortedInfo.field
         sortOrder = sortedInfo.order
       }
-      this.fetch({
+      this.selectData({
         sortField: sortField,
         sortOrder: sortOrder,
         ...this.queryParams
@@ -306,6 +306,24 @@ export default {
         this.dataSource = data.rows
         this.pagination = pagination
         this.loading = false
+      })
+    },
+    selectData (params = {}) {
+      this.loading = true
+      // 如果分页信息为空，则设置为默认值
+      this.$refs.TableInfo.pagination.current = this.pagination.defaultCurrent
+      this.$refs.TableInfo.pagination.pageSize = this.pagination.defaultPageSize
+      params.pageSize = this.pagination.defaultPageSize
+      params.pageNum = this.pagination.defaultCurrent
+      this.$get('role', {
+        ...params
+      }).then((r) => {
+        let data = r.data
+        const pagination = { ...this.pagination }
+        pagination.total = data.total
+        this.loading = false
+        this.dataSource = data.rows
+        this.pagination = pagination
       })
     }
   }
