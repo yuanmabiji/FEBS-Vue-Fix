@@ -32,6 +32,7 @@ Vue.prototype.$delete = request.delete
 Vue.prototype.$export = request.export
 Vue.prototype.$download = request.download
 Vue.prototype.$upload = request.upload
+Vue.prototype.$originalGet = request.originalGet
 Vue.prototype.$aesEncrypt = AesEncrypt
 
 /* eslint-disable no-new */

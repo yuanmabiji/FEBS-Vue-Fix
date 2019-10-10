@@ -226,6 +226,20 @@ const request = {
         'Content-Type': 'multipart/form-data'
       }
     })
+  },
+  originalGet (url, params) {
+    let _params
+    if (Object.is(params, undefined)) {
+      _params = ''
+    } else {
+      _params = '?'
+      for (let key in params) {
+        if (params.hasOwnProperty(key) && params[key] !== null) {
+          _params += `${key}=${params[key]}&`
+        }
+      }
+    }
+    return axios.get(`${url}${_params}`)
   }
 }
 
