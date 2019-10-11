@@ -2,6 +2,7 @@ package cc.mrbird.febs.common.interceptor;
 
 import cc.mrbird.febs.common.annotation.DataFilter;
 import cc.mrbird.febs.common.domain.FebsConstant;
+import cc.mrbird.febs.common.enums.FilterType;
 import cc.mrbird.febs.common.utils.FebsUtil;
 import cc.mrbird.febs.system.domain.Role;
 import cc.mrbird.febs.system.domain.User;
@@ -14,7 +15,6 @@ import com.baomidou.mybatisplus.core.parser.SqlInfo;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ExceptionUtils;
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.pagination.DialectFactory;
 import com.baomidou.mybatisplus.extension.plugins.pagination.DialectModel;
@@ -26,6 +26,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.plugin.*;
@@ -151,6 +152,7 @@ public class PaginationInterceptorImpl extends PaginationInterceptor {
                 || StatementType.CALLABLE == mappedStatement.getStatementType()) {
             return invocation.proceed();
         }
+        //数据权限过滤
         DataFilter anno=null;
         if(SqlCommandType.SELECT == mappedStatement.getSqlCommandType()){
             String id=mappedStatement.getId();
@@ -161,8 +163,16 @@ public class PaginationInterceptorImpl extends PaginationInterceptor {
             if(clazz.isAnnotationPresent(DataFilter.class)){
                 anno=(DataFilter)clazz.getAnnotation(DataFilter.class);
                String[] methods= anno.filterMethods();
+                String[] ruledOutMethods=anno.ruledOutMethods();
                if(methods.length==0){
-                   dataFilter=true;
+                   if(ruledOutMethods.length==0){
+                       dataFilter=true;
+                   }else{
+                       String str=","+StringUtils.join(ruledOutMethods,",")+",";
+                       if(str.indexOf(methodName)==-1){
+                           dataFilter=true;
+                       }
+                   }
                }else{
                    Optional<String> optional=Arrays.stream(methods).parallel().filter(me -> me.equals(methodName)).findAny();
                    if(optional.isPresent()){
@@ -214,35 +224,46 @@ public class PaginationInterceptorImpl extends PaginationInterceptor {
         //数据范围过滤
         if(dataFilter){
             User me= FebsUtil.getCurrentUser();
-            List<Role> roles= FebsUtil.getUserRoles();
-             boolean allData=false,deptData=false,selfData=false;
-            for(Role role:roles){
-                if(FebsConstant.DATA_FILTER_ALL ==role.getDataScope())allData=true;
-                if(FebsConstant.DATA_FILTER_DEPT==role.getDataScope())deptData=true;
-                if(FebsConstant.DATA_FILTER_OWN==role.getDataScope())selfData=true;
-            }
-            String fieldId = anno.filterFieldId(),filterType = anno.filterType();
-            String subordinates=FebsUtil.getUserSubordinates(me.getDeptId());
-            if(deptData){
-                if(StringUtils.isNotEmpty(subordinates)){
+            String fieldId = anno.filterFieldId(),filterType = anno.filterType().getType(),joinSql=anno.joinSql();
+            if(filterType.equals(FilterType.FIELD.getType())){
+                List<Role> roles= FebsUtil.getUserRoles();
+                boolean allData=false,deptData=false,selfData=false;
+                for(Role role:roles){
+                    if(FebsConstant.DATA_FILTER_ALL ==role.getDataScope())allData=true;
+                    if(FebsConstant.DATA_FILTER_DEPT==role.getDataScope())deptData=true;
+                    if(FebsConstant.DATA_FILTER_OWN==role.getDataScope())selfData=true;
+                }
+                String subordinates=FebsUtil.getUserSubordinates(me.getDeptId());
+                if(deptData){
+                    if(StringUtils.isNotEmpty(subordinates)){
+                        if(originalSql.indexOf("where")==-1){
+                            originalSql=originalSql+" where "+fieldId+" in ("+subordinates+")";
+                        }else{
+                            String[] sqlParts=originalSql.split("where");
+                            Assert.isTrue(sqlParts.length==2);
+                            originalSql=sqlParts[0]+"where "+fieldId+" in ("+subordinates+") and "+sqlParts[1];
+                        }
+                    }
+                }else if(selfData){
                     if(originalSql.indexOf("where")==-1){
-                        originalSql=originalSql+" where "+fieldId+" in ("+subordinates+")";
+                        originalSql=originalSql+" where "+fieldId+" in ("+me.getUserId()+")";
                     }else{
                         String[] sqlParts=originalSql.split("where");
                         Assert.isTrue(sqlParts.length==2);
-                        originalSql=sqlParts[0]+"where "+fieldId+" in ("+subordinates+") and "+sqlParts[1];
+                        originalSql=sqlParts[0]+"where "+fieldId+" in ("+me.getUserId()+") and "+sqlParts[1];
                     }
-
+                }else if (allData){}
+            }else if(filterType.equals(FilterType.JOIN.getType())){
+                if(StringUtils.isNotEmpty(joinSql)){
+                    if(originalSql.indexOf("where")==-1){
+                        originalSql=originalSql+" "+joinSql+ " where "+ fieldId+"="+me.getUserId();
+                    }else{
+                        String[] sqlParts=originalSql.split("where");
+                        Assert.isTrue(sqlParts.length==2);
+                        originalSql=sqlParts[0]+joinSql+" where "+fieldId+"="+me.getUserId()+" and "+sqlParts[1];
+                    }
                 }
-            }else if(selfData){
-                if(originalSql.indexOf("where")==-1){
-                    originalSql=originalSql+" where "+fieldId+" in ("+me.getUserId()+")";
-                }else{
-                    String[] sqlParts=originalSql.split("where");
-                    Assert.isTrue(sqlParts.length==2);
-                    originalSql=sqlParts[0]+"where "+fieldId+" in ("+me.getUserId()+") and "+sqlParts[1];
-                }
-            }else if (allData){}
+            }
         }
         Connection connection = (Connection) invocation.getArgs()[0];
         DbType dbType = StringUtils.isNotEmpty(dialectType) ? DbType.getDbType(dialectType)
