@@ -174,9 +174,12 @@ public class PaginationInterceptorImpl extends PaginationInterceptor {
                        }
                    }
                }else{
-                   Optional<String> optional=Arrays.stream(methods).parallel().filter(me -> me.equals(methodName)).findAny();
-                   if(optional.isPresent()){
-                       dataFilter=true;
+                   Optional<String> optional=Arrays.stream(ruledOutMethods).parallel().filter(me -> me.equals(methodName)).findAny();
+                   if(!optional.isPresent()){
+                       optional=Arrays.stream(methods).parallel().filter(me -> me.equals(methodName)).findAny();
+                       if(optional.isPresent()){
+                           dataFilter=true;
+                       }
                    }
                }
             }else{
