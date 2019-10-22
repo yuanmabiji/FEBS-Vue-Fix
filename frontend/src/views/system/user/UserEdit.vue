@@ -99,7 +99,7 @@ export default {
       form: this.$form.createForm(this),
       deptTreeData: [],
       roleData: [],
-      userDept: [],
+      userDept: '',
       userId: '',
       loading: false
     }
@@ -135,7 +135,7 @@ export default {
         this.form.setFieldsValue({'roleId': roleArr})
       }
       if (user.deptId) {
-        this.userDept = [user.deptId]
+        this.userDept = user.deptId
       }
     },
     onDeptChange (value) {
