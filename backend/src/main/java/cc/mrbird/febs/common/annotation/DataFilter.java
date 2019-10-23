@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
  * 数据范围过滤注解
  */
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DataFilter {
     /**
