@@ -121,21 +121,21 @@ export default {
     setFormValues ({...user}) {
       this.userId = user.userId
       let fields = ['username', 'email', 'status', 'ssex', 'mobile']
+      let obj = {}
       Object.keys(user).forEach((key) => {
         if (fields.indexOf(key) !== -1) {
           this.form.getFieldDecorator(key)
-          let obj = {}
           obj[key] = user[key]
-          this.form.setFieldsValue(obj)
         }
       })
+      this.form.setFieldsValue(obj)
       if (user.roleId) {
         this.form.getFieldDecorator('roleId')
         let roleArr = user.roleId.split(',')
         this.form.setFieldsValue({'roleId': roleArr})
       }
       if (user.deptId) {
-        this.userDept = user.deptId
+        this.userDept = ((typeof user.deptId) === 'string') ? user.deptId : user.deptId.toString()
       }
     },
     onDeptChange (value) {
