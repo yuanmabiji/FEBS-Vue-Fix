@@ -146,7 +146,7 @@ public class UserController extends BaseController {
     public boolean checkPassword(
             @NotBlank(message = "{required}") String username,
             @NotBlank(message = "{required}") String password) {
-        String encryptPassword = MD5Util.encrypt(username, password);
+        String encryptPassword = MD5Util.encrypt(username, AesEncryptUtil.desEncrypt(password));
         User user = userService.findByName(username);
         if (user != null)
             return StringUtils.equals(user.getPassword(), encryptPassword);
