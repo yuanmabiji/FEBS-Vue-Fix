@@ -50,7 +50,7 @@ public class JobController extends BaseController {
     @Log("新增定时任务")
     @PostMapping
     @RequiresPermissions("job:add")
-    public void addJob(@Valid Job job) throws FebsException {
+    public void addJob(@RequestBody @Valid Job job) throws FebsException {
         try {
             this.jobService.createJob(job);
         } catch (Exception e) {
@@ -77,7 +77,7 @@ public class JobController extends BaseController {
     @Log("修改定时任务")
     @PutMapping
     @RequiresPermissions("job:update")
-    public void updateJob(@Valid Job job) throws FebsException {
+    public void updateJob(@RequestBody @Valid Job job) throws FebsException {
         try {
             this.jobService.updateJob(job);
         } catch (Exception e) {
