@@ -239,31 +239,43 @@ public class PaginationInterceptorImpl extends PaginationInterceptor {
                 String subordinates=FebsUtil.getUserSubordinates(me.getDeptId());
                 if(deptData){
                     if(StringUtils.isNotEmpty(subordinates)){
-                        if(originalSql.indexOf("where")==-1){
+                        if(!StringUtils.containsIgnoreCase(originalSql,"where")){
                             originalSql=originalSql+" where "+fieldId+" in ("+subordinates+")";
-                        }else{
+                        }else if (originalSql.contains("where")){
                             String[] sqlParts=originalSql.split("where");
                             Assert.isTrue(sqlParts.length==2);
                             originalSql=sqlParts[0]+"where "+fieldId+" in ("+subordinates+") and "+sqlParts[1];
+                        }else if (originalSql.contains("WHERE")){
+                            String[] sqlParts=originalSql.split("WHERE");
+                            Assert.isTrue(sqlParts.length==2);
+                            originalSql=sqlParts[0]+"WHERE "+fieldId+" in ("+subordinates+") and "+sqlParts[1];
                         }
                     }
                 }else if(selfData){
-                    if(originalSql.indexOf("where")==-1){
+                    if(!StringUtils.containsIgnoreCase(originalSql,"where")){
                         originalSql=originalSql+" where "+fieldId+" in ("+me.getUserId()+")";
-                    }else{
+                    }else if (originalSql.contains("where")){
                         String[] sqlParts=originalSql.split("where");
                         Assert.isTrue(sqlParts.length==2);
                         originalSql=sqlParts[0]+"where "+fieldId+" in ("+me.getUserId()+") and "+sqlParts[1];
+                    }else if (originalSql.contains("WHERE")){
+                        String[] sqlParts=originalSql.split("WHERE");
+                        Assert.isTrue(sqlParts.length==2);
+                        originalSql=sqlParts[0]+"WHERE "+fieldId+" in ("+me.getUserId()+") and "+sqlParts[1];
                     }
                 }else if (allData){}
             }else if(filterType.equals(FilterType.JOIN.getType())){
                 if(StringUtils.isNotEmpty(joinSql)){
-                    if(originalSql.indexOf("where")==-1){
+                    if(!StringUtils.containsIgnoreCase(originalSql,"where")){
                         originalSql=originalSql+" "+joinSql+ " where "+ fieldId+"="+me.getUserId();
-                    }else{
-                        String[] sqlParts=originalSql.split("where");
+                    }else if (originalSql.contains("where")){
+                        String[] sqlParts=originalSql.split("WHERE");
                         Assert.isTrue(sqlParts.length==2);
                         originalSql=sqlParts[0]+joinSql+" where "+fieldId+"="+me.getUserId()+" and "+sqlParts[1];
+                    }else if (originalSql.contains("WHERE")){
+                        String[] sqlParts=originalSql.split("WHERE");
+                        Assert.isTrue(sqlParts.length==2);
+                        originalSql=sqlParts[0]+joinSql+" WHERE "+fieldId+"="+me.getUserId()+" and "+sqlParts[1];
                     }
                 }
             }
