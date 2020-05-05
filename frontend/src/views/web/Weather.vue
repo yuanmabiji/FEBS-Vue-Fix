@@ -16,13 +16,25 @@
         </a-auto-complete>
       </div>
     </div>
-    <div class="weather-area" v-show="!loading">
-      <div class="weather-chart-info">
-        <apexchart ref="seven" height="350" type=line :options="seven.chartOptions" :series="seven.series" />
+    <div class="weather-area">
+      <div class="weather-info">
+        <a-row :gutter="8">
+          <a-col :span="12">
+              <div  id="servenChart" style="height: 400px;border:1px solid  #f1f1f1;border-radius: 5px" ></div>
+          </a-col>
+          <a-col :span="12">
+              <div  id="futureChart" style="height: 400px;border:1px solid  #f1f1f1;border-radius: 5px" ></div>
+          </a-col>
+        </a-row>
+      </div>
+      <!--<div class="weather-chart-info">
+        &lt;!&ndash;<apexchart ref="seven" height="350" type=line :options="seven.chartOptions" :series="seven.series" />&ndash;&gt;
+        <div  id="servenChart" style="width: 100%; height: 400px;border:1px solid  #f1f1f1;border-radius: 5px" ></div>
       </div>
       <div class="weather-chart-info">
-        <apexchart ref="future" height="350" type=area :options="future.chartOptions" :series="future.series" />
-      </div>
+        &lt;!&ndash;<apexchart ref="future" height="350" type=area :options="future.chartOptions" :series="future.series" />&ndash;&gt;
+        <div  id="futureChart" style="width: 100%; height: 400px;border:1px solid  #f1f1f1;border-radius: 5px" ></div>
+      </div>-->
     </div>
     <div class="weather-area">
       <div class="weather-info">
@@ -140,6 +152,10 @@ export default {
       storage: [],
       citys: [],
       areaId: '',
+      htmlspan: '<span style="display:inline-block;margin-right: 5px;border-radius: 10px;width: 10px;height: 10px;background-color: ',
+      servenChart: {},
+      futureChart: {},
+      legends: ['最高温', '最低温'],
       weather: {
         provinceName: '',
         countyName: '',
@@ -157,6 +173,8 @@ export default {
     }
   },
   mounted () {
+    this.servenChart = this.$echarts.init(document.getElementById('servenChart'))
+    this.futureChart = this.$echarts.init(document.getElementById('futureChart'))
     axios.get('../../../static/file/city.json').then((r) => {
       this.citys = r.data
     })
@@ -182,6 +200,7 @@ export default {
       this.areaId = this.storage[index]
     },
     searchWeather () {
+      let that = this
       if (!this.areaId) {
         this.$message.warning('请选择城市')
       } else {
@@ -209,24 +228,26 @@ export default {
             let min = 0
             let max = 0
             for (let i = 0; i < weathers.length; i++) {
+              let dayC = parseFloat(weathers[i].temp_day_c)
+              let nightC = parseFloat(weathers[i].temp_night_c)
               if (i === weathers.length - 1) {
-                this.weather.day_c.unshift(parseFloat(weathers[i].temp_day_c))
-                this.weather.night_c.unshift(parseFloat(weathers[i].temp_night_c))
+                this.weather.day_c.unshift(dayC)
+                this.weather.night_c.unshift(nightC)
                 this.weather.dateArr.unshift(weathers[i].date.split('-')[1] + '-' + weathers[i].date.split('-')[2])
               } else {
-                this.weather.day_c.push(parseFloat(weathers[i].temp_day_c))
-                this.weather.night_c.push(parseFloat(weathers[i].temp_night_c))
+                this.weather.day_c.push(dayC)
+                this.weather.night_c.push(nightC)
                 this.weather.dateArr.push(weathers[i].date.split('-')[1] + '-' + weathers[i].date.split('-')[2])
               }
               if (i === 0) {
-                max = this.weather.day_c[0]
-                min = this.weather.night_c[0]
+                max = dayC
+                min = nightC
               } else {
-                if (this.weather.day_c[i] > max) {
-                  max = this.weather.day_c[i]
+                if (dayC > max) {
+                  max = dayC
                 }
-                if (this.weather.night_c[i] < min) {
-                  min = this.weather.night_c[i]
+                if (nightC < min) {
+                  min = nightC
                 }
               }
             }
@@ -237,44 +258,145 @@ export default {
               this.weather.hours_c.push(parseFloat(weather3HoursDetailsInfos[i].highestTemperature))
               this.weather.timeArr.push(time[0] + ':' + time[1])
             }
-            this.$refs.seven.updateSeries([
-              {
-                name: '最高温',
-                data: this.weather.day_c
+            let servernSeries = []
+            servernSeries.push({name: '最高温', type: 'line', data: this.weather.day_c})
+            servernSeries.push({name: '最低温', type: 'line', data: this.weather.night_c})
+            this.servenChart.setOption({
+              title: {
+                text: `${this.weather.provinceName} - ${this.weather.countyName}未来七日气温`,
+                show: true,
+                left: 10,
+                top: 10
               },
-              {
-                name: '最低温',
-                data: this.weather.night_c
-              }
-            ], true)
-            this.$refs.future.updateSeries([
-              {
-                name: '未来气温',
-                data: this.weather.hours_c
-              }
-            ])
-            this.$refs.seven.updateOptions({
-              xaxis: {
-                categories: this.weather.dateArr
+              tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                  type: 'line'
+                },
+                formatter: function name (params) {
+                  let htmlTip = ''
+                  for (let i = 0; i < params.length; i++) {
+                    if (i === 0) {
+                      htmlTip += params[i].axisValue + '<br />'
+                    }
+                    if (i === (params.length - 1)) {
+                      htmlTip += (that.htmlspan + params[i].color + ';"></span>' + params[i].seriesName + ' : ' + params[i].value)
+                    } else {
+                      htmlTip += (that.htmlspan + params[i].color + ';"></span>' + params[i].seriesName + ' : ' + params[i].value + '<br />')
+                    }
+                  }
+                  return htmlTip
+                }
               },
-              yaxis: {
+              legend: {
+                type: 'scroll',
+                x: 'center',
+                y: 'bottom',
+                textStyle: {
+                  fontSize: '12'
+                },
+                data: this.legends
+              },
+              toolbox: {
+                show: true,
+                right: 20,
+                top: 10,
+                feature: {
+                  saveAsImage: {}
+                }
+              },
+              xAxis: {
+                type: 'category',
+                boundaryGap: true,
+                data: this.weather.dateArr,
+                axisLabel: {
+                  textStyle: {
+                    fontSize: '12'
+                  }
+                }
+              },
+              yAxis: {
+                type: 'value',
+                axisLabel: {
+                  formatter: '{value}',
+                  textStyle: {
+                    fontSize: '12'
+                  }
+                },
                 min: min - 5,
                 max: max + 5
               },
-              title: {
-                text: `${this.weather.provinceName} - ${this.weather.countyName}未来七日气温`,
-                align: 'center'
-              }
-            }, true, true)
-            this.$refs.future.updateOptions({
-              xaxis: {
-                categories: this.weather.timeArr
+              grid: {
+                left: '4%'
               },
+              series: servernSeries
+            }, true)
+            this.futureChart.setOption({
               title: {
                 text: `${this.weather.provinceName} - ${this.weather.countyName}未来气温细节`,
-                align: 'center'
+                show: true,
+                left: 10,
+                top: 10
+              },
+              tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                  type: 'line'
+                },
+                formatter: function name (params) {
+                  let htmlTip = ''
+                  for (let i = 0; i < params.length; i++) {
+                    if (i === 0) {
+                      htmlTip += params[i].axisValue + '<br />'
+                    }
+                    if (i === (params.length - 1)) {
+                      htmlTip += (that.htmlspan + params[i].color + ';"></span>' + params[i].seriesName + ' : ' + params[i].value)
+                    } else {
+                      htmlTip += (that.htmlspan + params[i].color + ';"></span>' + params[i].seriesName + ' : ' + params[i].value + '<br />')
+                    }
+                  }
+                  return htmlTip
+                }
+              },
+              legend: {
+                show: false
+              },
+              toolbox: {
+                show: true,
+                right: 20,
+                top: 10,
+                feature: {
+                  saveAsImage: {}
+                }
+              },
+              xAxis: {
+                type: 'category',
+                boundaryGap: true,
+                data: this.weather.timeArr,
+                axisLabel: {
+                  textStyle: {
+                    fontSize: '12'
+                  }
+                }
+              },
+              yAxis: {
+                type: 'value',
+                axisLabel: {
+                  formatter: '{value}',
+                  textStyle: {
+                    fontSize: '12'
+                  }
+                }
+              },
+              grid: {
+                left: '4%'
+              },
+              series: {
+                name: '未来气温',
+                type: 'line',
+                data: this.weather.hours_c
               }
-            }, true, true)
+            }, true)
           }
         }).catch((r) => {
           console.error(r)

@@ -12,7 +12,7 @@
       <p :title="roleInfoData.remark"><a-icon type="book" />&nbsp;&nbsp;角色描述：{{roleInfoData.remark}}</p>
       <p><a-icon type="clock-circle" />&nbsp;&nbsp;创建时间：{{roleInfoData.createTime}}</p>
       <p><a-icon type="clock-circle" />&nbsp;&nbsp;修改时间：{{roleInfoData.modifyTime? roleInfoData.modifyTime : '暂未修改'}}</p>
-      <p><a-icon type="clock-circle" />&nbsp;&nbsp;数据权限：{{0 === roleInfoData.dataScope ? '全部数据' : 1 === roleInfoData.dataScope ? '部门数据': 2 === roleInfoData.dataScope ? '个人数据': ''}}</p>
+      <p><a-icon type="clock-circle" />&nbsp;&nbsp;数据权限：{{scope}}</p>
       <p><a-icon type="trophy" />&nbsp;&nbsp;所拥有的权限：
         <a-tree
           :key="key"
@@ -35,6 +35,11 @@ export default {
     },
     roleInfoData: {
       require: true
+    },
+    dataScope: {
+      type: Array,
+      required: true,
+      default: () => []
     }
   },
   data () {
@@ -43,6 +48,17 @@ export default {
       loading: true,
       checkedKeys: [],
       menuTreeData: []
+    }
+  },
+  computed: {
+    scope () {
+      let val = ''
+      this.dataScope.forEach((element, index) => {
+        if (this.roleInfoData.dataScope === Number(element.keyy)) {
+          val = element.valuee
+        }
+      })
+      return val
     }
   },
   methods: {

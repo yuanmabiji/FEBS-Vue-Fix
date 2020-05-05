@@ -1,9 +1,13 @@
 package cc.mrbird.febs.common.authentication;
 
+import cc.mrbird.febs.common.domain.FebsResponse;
+import cc.mrbird.febs.common.exception.code.Code;
+import cc.mrbird.febs.common.handler.ResponseStat;
 import cc.mrbird.febs.common.properties.FebsProperties;
 import cc.mrbird.febs.common.utils.FebsUtil;
 import cc.mrbird.febs.common.utils.SpringContextUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -26,7 +30,6 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
     private static final String TOKEN = "Authentication";
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();
-
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) throws UnauthorizedException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
@@ -93,8 +96,10 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
         httpResponse.setContentType("application/json; charset=utf-8");
         final String message = "未认证，请在前端系统进行认证";
         try (PrintWriter out = httpResponse.getWriter()) {
-            String responseJson = "{\"message\":\"" + message + "\"}";
-            out.print(responseJson);
+            FebsResponse tandemResponse=new FebsResponse().message(Code.C401.getDesc()).code(Code.C401.getCode().toString()).status(ResponseStat.ERROR.getText());
+            String json = SpringContextUtil.getBean("jacksonObjectMapper",ObjectMapper.class).writeValueAsString(tandemResponse);
+            System.out.println(json);
+            out.print(json);
         } catch (IOException e) {
             log.error("sendChallenge error：", e);
         }

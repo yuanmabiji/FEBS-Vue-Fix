@@ -25,7 +25,7 @@
       <a-form-item label='数据权限' v-bind="formItemLayout">
         <a-radio-group
           name="dataScope"
-          :options="[{label: '全部数据',value: 0},{label: '部门数据',value: 1},{label: '个人数据',value: 2}]"
+          :options="options"
           v-decorator="[
           'dataScope',
           {rules: [
@@ -83,6 +83,11 @@ export default {
     },
     roleInfoData: {
       require: true
+    },
+    dataScope: {
+      type: Array,
+      required: true,
+      default: () => []
     }
   },
   data () {
@@ -101,8 +106,12 @@ export default {
       checkedKeys: [],
       defaultCheckedKeys: [],
       expandedKeys: [],
-      checkStrictly: true
+      checkStrictly: true,
+      options: []
     }
+  },
+  mounted () {
+    this.daraScopeOptions()
   },
   methods: {
     reset () {
@@ -178,6 +187,16 @@ export default {
           }
         })
       }
+    },
+    daraScopeOptions () {
+      let options = []
+      for (let ind in this.$props.dataScope) {
+        let option = {}
+        option.label = this.$props.dataScope[ind].valuee
+        option.value = Number(this.$props.dataScope[ind].keyy)
+        options.push(option)
+      }
+      this.options = options
     }
   },
   watch: {

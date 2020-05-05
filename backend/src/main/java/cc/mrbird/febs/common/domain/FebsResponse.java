@@ -31,4 +31,19 @@ public class FebsResponse extends HashMap<String, Object> {
         super.put(key, value);
         return this;
     }
+
+    public FebsResponse addCodeMessage(Integer code,String message,String status,Object data) {
+        this.put("code", code);
+        this.put("message", message);
+        this.put("status", status);
+        this.put("data", data);
+        return this;
+    }
+
+    public FebsResponse addCodeMessage(Integer code,String message,String status) {
+        this.put("code", code);
+        this.put("message", message);
+        this.put("status", status);
+        return this;
+    }
 }

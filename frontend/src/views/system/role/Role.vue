@@ -70,12 +70,14 @@
       <role-info
         @close="handleRoleInfoClose"
         :roleInfoVisiable="roleInfo.visiable"
+        :dataScope="this.dataScope"
         :roleInfoData="roleInfo.data">
       </role-info>
       <!-- 新增角色 -->
       <role-add
         @close="handleRoleAddClose"
         @success="handleRoleAddSuccess"
+        :dataScope="this.dataScope"
         :roleAddVisiable="roleAdd.visiable">
       </role-add>
       <!-- 修改角色 -->
@@ -84,6 +86,7 @@
         :roleInfoData="roleInfo.data"
         @close="handleRoleEditClose"
         @success="handleRoleEditSuccess"
+        :dataScope="this.dataScope"
         :roleEditVisiable="roleEdit.visiable">
       </role-edit>
     </div>
@@ -95,7 +98,7 @@ import RangeDate from '@/components/datetime/RangeDate'
 import RoleAdd from './RoleAdd'
 import RoleInfo from './RoleInfo'
 import RoleEdit from './RoleEdit'
-
+import {mapState} from 'vuex'
 export default {
   name: 'Role',
   components: {RangeDate, RoleInfo, RoleAdd, RoleEdit},
@@ -133,10 +136,18 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      dataScope: state => state.dict.dicts.t_role_data_scope
+    }),
     columns () {
       let { sortedInfo, filteredInfo } = this
       sortedInfo = sortedInfo || {}
       filteredInfo = filteredInfo || {}
+      let dataFilters = []
+      for (let index in this.dataScope) {
+        let obj = {text: this.dataScope[index].valuee, value: this.dataScope[index].keyy}
+        dataFilters.push(obj)
+      }
       return [{
         title: '角色',
         dataIndex: 'roleName'
@@ -159,22 +170,17 @@ export default {
         title: '数据范围',
         dataIndex: 'dataScope',
         customRender: (text, row, index) => {
-          switch (text) {
-            case 0:
-              return '全部数据'
-            case 1:
-              return '部门数据'
-            case 2:
-              return '个人数据'
-            default:
-              return text
+          for (let _index in this.dataScope) {
+            let key = Number(this.dataScope[_index].keyy)
+            if (text === key) {
+              return this.dataScope[_index].valuee
+            } else {
+              continue
+            }
           }
+          return text
         },
-        filters: [
-          { text: '全部数据', value: '0' },
-          { text: '部门数据', value: '1 ' },
-          { text: '个人数据', value: '2 ' }
-        ],
+        filters: dataFilters,
         filterMultiple: false,
         filteredValue: filteredInfo.dataScope || null,
         onFilter: (value, record) => parseInt(value) === record.dataScope

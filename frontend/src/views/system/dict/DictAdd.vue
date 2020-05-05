@@ -37,6 +37,12 @@
                     { max: 20, message: '长度不能超过20个字符'}
                   ]}]"/>
       </a-form-item>
+      <a-form-item label='其他' v-bind="formItemLayout">
+        <a-input v-decorator="['otherKeyy',
+                   {rules: [
+                    { max: 20, message: '长度不能超过20个字符'}
+                  ]}]"/>
+      </a-form-item>
     </a-form>
     <div class="drawer-bootom-button">
       <a-popconfirm title="确定放弃编辑？" @confirm="onClose" okText="确定" cancelText="取消">
@@ -92,7 +98,7 @@ export default {
       })
     },
     setDictFields () {
-      let values = this.form.getFieldsValue(['keyy', 'valuee', 'tableName', 'fieldName'])
+      let values = this.form.getFieldsValue(['keyy', 'valuee', 'tableName', 'fieldName', 'otherKeyy'])
       if (typeof values !== 'undefined') {
         Object.keys(values).forEach(_key => { this.dict[_key] = values[_key] })
       }

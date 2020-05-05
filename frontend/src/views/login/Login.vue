@@ -61,7 +61,8 @@ export default {
     return {
       loading: false,
       error: '',
-      activeKey: '1'
+      activeKey: '1',
+      dicts: []
     }
   },
   computed: {
@@ -94,6 +95,7 @@ export default {
               setTimeout(() => {
                 this.loading = false
               }, 500)
+              this.getDicts()
               this.$router.push('/')
             }).catch((e) => {
               console.error(e)
@@ -129,7 +131,8 @@ export default {
       setMultipage: 'setting/setMultipage',
       fixSiderbar: 'setting/fixSiderbar',
       fixHeader: 'setting/fixHeader',
-      setColor: 'setting/setColor'
+      setColor: 'setting/setColor',
+      setDicts: 'dict/setDicts'
     }),
     saveLoginData (data) {
       this.setToken(data.token)
@@ -143,6 +146,17 @@ export default {
       this.fixSiderbar(data.config.fixSiderbar === '1')
       this.fixHeader(data.config.fixHeader === '1')
       this.setColor(data.config.color)
+    },
+    getDicts () {
+      this.$get('dict/trim').then((r) => {
+        let data = r.data
+        this.saveDictData(data)
+      }).catch((e) => {
+        console.error(e)
+      })
+    },
+    saveDictData (data) {
+      this.setDicts(data)
     }
   }
 }

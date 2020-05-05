@@ -127,8 +127,12 @@ export default {
         if (data.data.length) {
           this.fetch()
         }
-        this.importData = data.data
-        this.errors = data.error
+        if (typeof data.data !== 'undefined') {
+          this.importData = data.data
+        }
+        if (typeof data.error !== 'undefined') {
+          this.errors = data.error
+        }
         this.times = data.time / 1000
         this.uploading = false
         this.fileList = []
