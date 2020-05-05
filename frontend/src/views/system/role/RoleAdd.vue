@@ -25,6 +25,17 @@
           ]}]">
         </a-textarea>
       </a-form-item>
+      <a-form-item label='数据权限' v-bind="formItemLayout">
+        <a-radio-group
+          name="dataScope"
+          :options="options"
+          v-decorator="[
+          'dataScope',
+          {rules: [
+            { required: true }
+          ]}]">
+        </a-radio-group>
+      </a-form-item>
       <a-form-item label='权限选择'
                    style="margin-bottom: 2rem"
                    :validateStatus="menuSelectStatus"
@@ -71,6 +82,11 @@ export default {
   props: {
     roleAddVisiable: {
       default: false
+    },
+    dataScope: {
+      type: Array,
+      required: true,
+      default: () => []
     }
   },
   data () {
@@ -86,14 +102,19 @@ export default {
       role: {
         roleName: '',
         remark: '',
-        menuId: ''
+        menuId: '',
+        dataScope: ''
       },
       checkedKeys: [],
       expandedKeys: [],
       menuTreeData: [],
       allTreeKeys: [],
-      checkStrictly: true
+      checkStrictly: true,
+      options: []
     }
+  },
+  mounted () {
+    this.daraScopeOptions()
   },
   methods: {
     reset () {
@@ -183,10 +204,20 @@ export default {
       }
     },
     setRoleFields () {
-      let values = this.form.getFieldsValue(['roleName', 'remark'])
+      let values = this.form.getFieldsValue(['roleName', 'remark', 'dataScope'])
       if (typeof values !== 'undefined') {
         Object.keys(values).forEach(_key => { this.role[_key] = values[_key] })
       }
+    },
+    daraScopeOptions () {
+      let options = []
+      for (let ind in this.$props.dataScope) {
+        let option = {}
+        option.label = this.$props.dataScope[ind].valuee
+        option.value = Number(this.$props.dataScope[ind].keyy)
+        options.push(option)
+      }
+      this.options = options
     }
   },
   watch: {

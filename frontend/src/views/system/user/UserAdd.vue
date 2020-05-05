@@ -54,16 +54,13 @@
       <a-form-item label='状态' v-bind="formItemLayout">
         <a-radio-group
           v-decorator="['status',{rules: [{ required: true, message: '请选择状态'}]}]">
-          <a-radio value="0">锁定</a-radio>
-          <a-radio value="1">有效</a-radio>
+          <a-radio :key="key" :value="val.keyy" v-for="(val,key) in status" >{{val.valuee}}</a-radio>
         </a-radio-group>
       </a-form-item>
       <a-form-item label='性别' v-bind="formItemLayout">
         <a-radio-group
           v-decorator="['ssex',{rules: [{ required: true, message: '请选择性别' }]}]">
-          <a-radio value="0">男</a-radio>
-          <a-radio value="1">女</a-radio>
-          <a-radio value="2">保密</a-radio>
+          <a-radio :key="key" :value="val.keyy" v-for="(val,key) in ssexs">{{val.valuee}}</a-radio>
         </a-radio-group>
       </a-form-item>
     </a-form>
@@ -85,6 +82,16 @@ export default {
   props: {
     userAddVisiable: {
       default: false
+    },
+    ssexs: {
+      type: Array,
+      required: true,
+      default: () => []
+    },
+    status: {
+      type: Array,
+      required: true,
+      default: () => []
     }
   },
   data () {

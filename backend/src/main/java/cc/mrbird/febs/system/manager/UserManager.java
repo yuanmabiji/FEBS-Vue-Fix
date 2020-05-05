@@ -119,7 +119,8 @@ public class UserManager {
      */
     public void loadUserRedisCache(User user) throws Exception {
         // 缓存用户
-        cacheService.saveUser(user.getUsername());
+//        cacheService.saveUser(user.getUsername());
+        cacheService.saveUser(user);
         // 缓存用户角色
         cacheService.saveRoles(user.getUsername());
         // 缓存用户权限
@@ -155,9 +156,13 @@ public class UserManager {
                 cacheService.deleteUser(user.getUsername());
                 cacheService.deleteRoles(user.getUsername());
                 cacheService.deletePermissions(user.getUsername());
+                cacheService.deleteUserSubordinates(user.getDeptId());
             }
             cacheService.deleteUserConfigs(userId);
         }
     }
 
+    public String findSubordinates(Long deptId) throws Exception{
+        return userService.findSubordinates(deptId);
+    }
 }

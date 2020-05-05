@@ -2,11 +2,13 @@ package cc.mrbird.febs.system.controller;
 
 import cc.mrbird.febs.common.annotation.Log;
 import cc.mrbird.febs.common.controller.BaseController;
+import cc.mrbird.febs.common.domain.FebsConstant;
 import cc.mrbird.febs.common.domain.FebsResponse;
 import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.system.domain.Dict;
 import cc.mrbird.febs.system.service.DictService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +20,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Validated
@@ -36,6 +40,27 @@ public class DictController extends BaseController {
     @RequiresPermissions("dict:view")
     public Map<String, Object> DictList(QueryRequest request, Dict dict) {
         return getDataTable(this.dictService.findDicts(request, dict));
+    }
+
+    @GetMapping("/trim")
+    public Map<String,List<Map<String,Object>>> DictTrimList(Dict dict) {
+        QueryRequest request= new QueryRequest();
+        request.setPageNum(1);
+        request.setPageSize(-1);
+        IPage<Dict> dicts = this.dictService.findDicts(request, dict);
+        Map<String,List<Map<String,Object>>> _map= new ConcurrentHashMap();
+        dicts.getRecords().parallelStream().forEach(_dict->{
+            HashMap<String,Object> map=new HashMap<>();
+            map.put("keyy",_dict.getKeyy());
+            map.put("valuee",_dict.getValuee());
+            map.put("otherKeyy",_dict.getOtherKeyy());
+            String key = _dict.getTableName()+ FebsConstant.UNDER_LINE+_dict.getFieldName();
+            if(!_map.containsKey(key)){
+                _map.put(key,new ArrayList<>());
+            }
+            _map.get(key).add(map);
+        });
+        return _map;
     }
 
     @Log("新增字典")

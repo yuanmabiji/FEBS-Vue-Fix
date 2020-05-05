@@ -16,7 +16,10 @@
         <result column="AVATAR" jdbcType="VARCHAR" property="avatar"/>
         <result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
     </resultMap>
-
+    <resultMap id="deptUsersMap" type="cc.mrbird.febs.system.domain.DeptUsers">
+        <id column="userIds" jdbcType="VARCHAR" property="userIds"/>
+        <result column="deptId" jdbcType="DECIMAL" property="deptId"/>
+    </resultMap>
     <select id="findUserDetail" resultType="user" parameterType="user">
         SELECT
         u.user_id userId,
@@ -110,5 +113,13 @@
             u.AVATAR,
             u.DESCRIPTION,
             u.LAST_LOGIN_TIME
+    </select>
+    <select id="findSubordinates" resultType="string" parameterType="long">
+        SELECT GROUP_CONCAT(u.user_id) FROM
+        t_user u LEFT JOIN t_dept d ON u.dept_id = d.dept_id WHERE (d.dept_id = #{deptId} OR d.parent_id = #{deptId})
+    </select>
+    <select id="findSubordinatesMap" resultMap="deptUsersMap">
+        SELECT d.dept_id deptId, GROUP_CONCAT(u.user_id) userIds FROM
+        t_user u LEFT JOIN t_dept d ON (u.dept_id = d.dept_id or u.dept_id = d.parent_id ) where u.dept_id != '' GROUP BY deptId
     </select>
 </mapper>

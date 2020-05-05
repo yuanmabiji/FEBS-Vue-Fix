@@ -145,6 +145,9 @@ export default {
         title: '字段',
         dataIndex: 'fieldName'
       }, {
+        title: '其他依据',
+        dataIndex: 'otherKeyy'
+      }, {
         title: '操作',
         dataIndex: 'operation',
         scopedSlots: { customRender: 'operation' },

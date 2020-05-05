@@ -102,7 +102,7 @@ import MenuAdd from './MenuAdd'
 import MenuEdit from './MenuEdit'
 import ButtonAdd from './ButtonAdd'
 import ButtonEdit from './ButtonEdit'
-
+import {mapState} from 'vuex'
 export default {
   name: 'Menu',
   components: {ButtonAdd, ButtonEdit, RangeDate, MenuAdd, MenuEdit},
@@ -127,9 +127,17 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      types: state => state.dict.dicts.t_menu_type
+    }),
     columns () {
       let {filteredInfo} = this
       filteredInfo = filteredInfo || {}
+      let typeFilters = []
+      for (let index in this.types) {
+        let obj = {text: this.types[index].valuee, value: this.types[index].keyy}
+        typeFilters.push(obj)
+      }
       return [{
         title: '名称',
         dataIndex: 'text',
@@ -143,19 +151,16 @@ export default {
         title: '类型',
         dataIndex: 'type',
         customRender: (text, row, index) => {
-          switch (text) {
-            case '0':
-              return <a-tag color="cyan"> 菜单 </a-tag>
-            case '1':
-              return <a-tag color="pink"> 按钮 </a-tag>
-            default:
-              return text
+          for (let index in this.types) {
+            if (text === this.types[index].keyy) {
+              return this.types[index].valuee
+            } else {
+              continue
+            }
           }
+          return text
         },
-        filters: [
-          {text: '按钮', value: '1'},
-          {text: '菜单', value: '0'}
-        ],
+        filters: typeFilters,
         filterMultiple: false,
         filteredValue: filteredInfo.type || null,
         onFilter: (value, record) => record.type.includes(value)

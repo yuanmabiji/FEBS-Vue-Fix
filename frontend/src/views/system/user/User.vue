@@ -89,12 +89,16 @@
     <user-info
       :userInfoData="userInfo.data"
       :userInfoVisiable="userInfo.visiable"
+      :ssexs="this.ssexs"
+      :status="this.status"
       @close="handleUserInfoClose">
     </user-info>
     <!-- 新增用户 -->
     <user-add
       @close="handleUserAddClose"
       @success="handleUserAddSuccess"
+      :ssexs="this.ssexs"
+      :status="this.status"
       :userAddVisiable="userAdd.visiable">
     </user-add>
     <!-- 修改用户 -->
@@ -102,6 +106,8 @@
       ref="userEdit"
       @close="handleUserEditClose"
       @success="handleUserEditSuccess"
+      :ssexs="this.ssexs"
+      :status="this.status"
       :userEditVisiable="userEdit.visiable">
     </user-edit>
   </a-card>
@@ -150,12 +156,24 @@ export default {
   },
   computed: {
     ...mapState({
-      currentUser: state => state.account.user
+      currentUser: state => state.account.user,
+      ssexs: state => state.dict.dicts.t_user_ssex,
+      status: state => state.dict.dicts.t_user_status
     }),
     columns () {
       let { sortedInfo, filteredInfo } = this
       sortedInfo = sortedInfo || {}
       filteredInfo = filteredInfo || {}
+      let sexFilters = []
+      let stateFilters = []
+      for (let index in this.ssexs) {
+        let obj = {text: this.ssexs[index].valuee, value: this.ssexs[index].keyy}
+        sexFilters.push(obj)
+      }
+      for (let index in this.status) {
+        let obj = {text: this.status[index].valuee, value: this.status[index].keyy}
+        stateFilters.push(obj)
+      }
       return [{
         title: '用户名',
         dataIndex: 'username',
@@ -165,33 +183,29 @@ export default {
         title: '性别',
         dataIndex: 'ssex',
         customRender: (text, row, index) => {
-          switch (text) {
-            case '0':
-              return '男'
-            case '1':
-              return '女'
-            case '2':
-              return '保密'
-            default:
-              return text
+          for (let index in this.ssexs) {
+            if (text === this.ssexs[index].keyy) {
+              return this.ssexs[index].valuee
+            } else {
+              continue
+            }
           }
+          return text
         },
-        filters: [
-          { text: '男', value: '0' },
-          { text: '女', value: '1' },
-          { text: '保密', value: '2' }
-        ],
+        filters: sexFilters,
         filterMultiple: false,
         filteredValue: filteredInfo.ssex || null,
-        onFilter: (value, record) => record.ssex.includes(value)
+        onFilter: (value, record) => record.ssex.includes(value),
+        width: 75
       }, {
         title: '邮箱',
         dataIndex: 'email',
         scopedSlots: { customRender: 'email' },
-        width: 100
+        width: 150
       }, {
         title: '部门',
-        dataIndex: 'deptName'
+        dataIndex: 'deptName',
+        width: 80
       }, {
         title: '电话',
         dataIndex: 'mobile'
@@ -199,27 +213,29 @@ export default {
         title: '状态',
         dataIndex: 'status',
         customRender: (text, row, index) => {
-          switch (text) {
-            case '0':
-              return <a-tag color="red">锁定</a-tag>
-            case '1':
-              return <a-tag color="cyan">有效</a-tag>
-            default:
-              return text
+          for (let _index in this.status) {
+            let key = this.status[_index].keyy
+            if (text === key) {
+              let val = this.status[_index].valuee
+              let color = this.status[_index].otherKeyy
+              return <a-tag color={color}>{val}</a-tag>
+            } else {
+              continue
+            }
           }
+          return text
         },
-        filters: [
-          { text: '有效', value: '1' },
-          { text: '锁定', value: '0' }
-        ],
+        filters: stateFilters,
         filterMultiple: false,
         filteredValue: filteredInfo.status || null,
-        onFilter: (value, record) => record.status.includes(value)
+        onFilter: (value, record) => record.status.includes(value),
+        width: 75
       }, {
         title: '创建时间',
         dataIndex: 'createTime',
         sorter: true,
-        sortOrder: sortedInfo.columnKey === 'createTime' && sortedInfo.order
+        sortOrder: sortedInfo.columnKey === 'createTime' && sortedInfo.order,
+        width: 160
       }, {
         title: '操作',
         dataIndex: 'operation',

@@ -19,6 +19,9 @@ import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author wx
+ */
 @Slf4j
 @Validated
 @RestController
@@ -52,8 +55,11 @@ public class LogController extends BaseController {
 
     @PostMapping("excel")
     @RequiresPermissions("log:export")
-    public void export(QueryRequest request,@RequestBody SysLog sysLog, HttpServletResponse response) throws FebsException {
+    public void export(QueryRequest request, SysLog sysLog, HttpServletResponse response) throws FebsException {
         try {
+            if(request.getPageSize()> exportMaxCount) {
+                request.setPageSize(exportMaxCount);
+            }
             List<SysLog> sysLogs = this.logService.findLogs(request, sysLog).getRecords();
             ExcelKit.$Export(SysLog.class, response).downXlsx(sysLogs, false);
         } catch (Exception e) {

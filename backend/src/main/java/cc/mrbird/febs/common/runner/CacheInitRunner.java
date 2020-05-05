@@ -12,7 +12,9 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 缓存初始化
@@ -41,6 +43,15 @@ public class CacheInitRunner implements ApplicationRunner {
             log.info("缓存初始化 ······");
             log.info("缓存用户数据 ······");
             List<User> list = this.userService.list();
+            //缓存用户，部门关系
+            this.userService.findSubordinatesMap().stream().forEach((map)-> {
+                try {
+                    cacheService.saveUserSubordinates(map.getDeptId(),map.getUserIds());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
             for (User user : list) {
                 userManager.loadUserRedisCache(user);
             }

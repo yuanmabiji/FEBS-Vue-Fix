@@ -5,20 +5,17 @@ import Antd from 'ant-design-vue'
 import store from './store'
 import request from 'utils/request'
 import db from 'utils/localstorage'
-import VueApexCharts from 'vue-apexcharts'
 import AesEncrypt from 'utils/aesEncrypt'
-
+import VueMeta from 'vue-meta'
 import 'ant-design-vue/dist/antd.css'
-
+import echarts from 'echarts'
 import 'utils/install'
 
 Vue.config.productionTip = false
 Vue.use(Antd)
 Vue.use(db)
-Vue.use(VueApexCharts)
-
-Vue.component('apexchart', VueApexCharts)
-
+Vue.use(VueMeta)
+Vue.prototype.$echarts = echarts
 Vue.use({
   install (Vue) {
     Vue.prototype.$db = db

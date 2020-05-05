@@ -39,7 +39,7 @@
     <a-row :gutter="8" class="count-info">
       <a-col :span="12" class="visit-count-wrapper">
         <a-card class="visit-count">
-          <apexchart ref="count" type=bar height=300 :options="chartOptions" :series="series" />
+          <div  id="countChart" style="height: 400px;border:1px solid  #f1f1f1;border-radius: 5px" ></div>
         </a-card>
       </a-col>
       <a-col :span="12" class="project-wrapper">
@@ -58,41 +58,12 @@ import {mapState} from 'vuex'
 import moment from 'moment'
 import RunningTask from './common/RunningTask'
 moment.locale('zh-cn')
-
 export default {
   name: 'HomePage',
   components: {RunningTask, HeadInfo},
   data () {
     return {
       series: [],
-      chartOptions: {
-        chart: {
-          toolbar: {
-            show: false
-          }
-        },
-        plotOptions: {
-          bar: {
-            horizontal: false,
-            columnWidth: '35%'
-          }
-        },
-        dataLabels: {
-          enabled: false
-        },
-        stroke: {
-          show: true,
-          width: 2,
-          colors: ['transparent']
-        },
-        xaxis: {
-          categories: []
-        },
-        fill: {
-          opacity: 1
-
-        }
-      },
       projects: [],
       todayIp: '',
       todayVisitCount: '',
@@ -101,7 +72,10 @@ export default {
       userDept: '',
       lastLoginTime: '',
       welcomeMessage: '',
-      loadRepo: 0
+      loadRepo: 0,
+      htmlspan: '<span style="display:inline-block;margin-right: 5px;border-radius: 10px;width: 10px;height: 10px;background-color: ',
+      legends: ['总数', '您'],
+      myChart: {}
     }
   },
   computed: {
@@ -147,6 +121,118 @@ export default {
       }).catch(error => {
         console.log(error)
       })
+    },
+    runningProject () {
+      let that = this
+      this.$get(`index/${this.user.username}`).then((r) => {
+        let data = r.data.data
+        this.todayIp = data.todayIp
+        this.todayVisitCount = data.todayVisitCount
+        this.totalVisitCount = data.totalVisitCount
+        let dateArr = []
+        let totalSeries = {name: '总数', data: [], type: 'bar'}
+        let yourSeries = {name: '您', data: [], type: 'bar'}
+        for (let i = 6; i >= 0; i--) {
+          let time = moment().subtract(i, 'days').format('MM-DD')
+          let contain = false
+          for (let o of data.lastSevenVisitCount) {
+            if (o.days === time) {
+              contain = true
+              totalSeries.data.push(o.count)
+            }
+          }
+          if (!contain) {
+            totalSeries.data.push(0)
+          }
+          dateArr.push(time)
+        }
+        this.series.push(totalSeries)
+        for (let i = 6; i >= 0; i--) {
+          let time = moment().subtract(i, 'days').format('MM-DD')
+          let contain = false
+          for (let o of data.lastSevenUserVisitCount) {
+            if (o.days === time) {
+              contain = true
+              yourSeries.data.push(o.count)
+            }
+          }
+          if (!contain) {
+            yourSeries.data.push(0)
+          }
+        }
+        this.series.push(yourSeries)
+        this.myChart.setOption({
+          title: {
+            text: '近7日系统访问记录',
+            show: true,
+            left: 10,
+            top: 10
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'line'
+            },
+            formatter: function name (params) {
+              let htmlTip = ''
+              for (let i = 0; i < params.length; i++) {
+                if (i === 0) {
+                  htmlTip += params[i].axisValue + '<br />'
+                }
+                if (i === (params.length - 1)) {
+                  htmlTip += (that.htmlspan + params[i].color + ';"></span>' + params[i].seriesName + ' : ' + params[i].value)
+                } else {
+                  htmlTip += (that.htmlspan + params[i].color + ';"></span>' + params[i].seriesName + ' : ' + params[i].value + '<br />')
+                }
+              }
+              return htmlTip
+            }
+          },
+          legend: {
+            type: 'scroll',
+            x: 'center',
+            y: 'bottom',
+            textStyle: {
+              fontSize: '12'
+            },
+            data: this.legends
+          },
+          toolbox: {
+            show: true,
+            right: 20,
+            top: 10,
+            feature: {
+              saveAsImage: {}
+            }
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: true,
+            data: dateArr,
+            axisLabel: {
+              textStyle: {
+                fontSize: '12'
+              }
+            }
+          },
+          yAxis: {
+            type: 'value',
+            axisLabel: {
+              formatter: '{value}',
+              textStyle: {
+                fontSize: '12'
+              }
+            }
+          },
+          grid: {
+            left: '4%'
+          },
+          series: this.series
+        }, true)
+      }).catch((r) => {
+        console.error(r)
+        that.$message.error('获取首页信息失败')
+      })
     }
   },
   created () {
@@ -155,64 +241,8 @@ export default {
   },
   mounted () {
     this.welcomeMessage = this.welcome()
-    this.$get(`index/${this.user.username}`).then((r) => {
-      let data = r.data.data
-      this.todayIp = data.todayIp
-      this.todayVisitCount = data.todayVisitCount
-      this.totalVisitCount = data.totalVisitCount
-      let sevenVisitCount = []
-      let dateArr = []
-      for (let i = 6; i >= 0; i--) {
-        let time = moment().subtract(i, 'days').format('MM-DD')
-        let contain = false
-        for (let o of data.lastSevenVisitCount) {
-          if (o.days === time) {
-            contain = true
-            sevenVisitCount.push(o.count)
-          }
-        }
-        if (!contain) {
-          sevenVisitCount.push(0)
-        }
-        dateArr.push(time)
-      }
-      let sevenUserVistCount = []
-      for (let i = 6; i >= 0; i--) {
-        let time = moment().subtract(i, 'days').format('MM-DD')
-        let contain = false
-        for (let o of data.lastSevenUserVisitCount) {
-          if (o.days === time) {
-            contain = true
-            sevenUserVistCount.push(o.count)
-          }
-        }
-        if (!contain) {
-          sevenUserVistCount.push(0)
-        }
-      }
-      this.$refs.count.updateSeries([
-        {
-          name: '您',
-          data: sevenUserVistCount
-        },
-        {
-          name: '总数',
-          data: sevenVisitCount
-        }
-      ], true)
-      this.$refs.count.updateOptions({
-        xaxis: {
-          categories: dateArr
-        },
-        title: {
-          text: '近七日系统访问记录',
-          align: 'left'
-        }
-      }, true, true)
-    }).catch((r) => {
-      console.error(r)
-      this.$message.error('获取首页信息失败')
-    })
+    this.myChart = this.$echarts.init(document.getElementById('countChart'))
+    this.runningProject()
   }
 }
 </script>

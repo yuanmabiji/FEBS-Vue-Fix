@@ -70,12 +70,14 @@
       <role-info
         @close="handleRoleInfoClose"
         :roleInfoVisiable="roleInfo.visiable"
+        :dataScope="this.dataScope"
         :roleInfoData="roleInfo.data">
       </role-info>
       <!-- 新增角色 -->
       <role-add
         @close="handleRoleAddClose"
         @success="handleRoleAddSuccess"
+        :dataScope="this.dataScope"
         :roleAddVisiable="roleAdd.visiable">
       </role-add>
       <!-- 修改角色 -->
@@ -84,6 +86,7 @@
         :roleInfoData="roleInfo.data"
         @close="handleRoleEditClose"
         @success="handleRoleEditSuccess"
+        :dataScope="this.dataScope"
         :roleEditVisiable="roleEdit.visiable">
       </role-edit>
     </div>
@@ -95,7 +98,7 @@ import RangeDate from '@/components/datetime/RangeDate'
 import RoleAdd from './RoleAdd'
 import RoleInfo from './RoleInfo'
 import RoleEdit from './RoleEdit'
-
+import {mapState} from 'vuex'
 export default {
   name: 'Role',
   components: {RangeDate, RoleInfo, RoleAdd, RoleEdit},
@@ -117,6 +120,7 @@ export default {
         createTimeTo: ''
       },
       dataSource: [],
+      filteredInfo: null,
       sortedInfo: null,
       paginationInfo: null,
       selectedRowKeys: [],
@@ -132,9 +136,18 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      dataScope: state => state.dict.dicts.t_role_data_scope
+    }),
     columns () {
-      let { sortedInfo } = this
+      let { sortedInfo, filteredInfo } = this
       sortedInfo = sortedInfo || {}
+      filteredInfo = filteredInfo || {}
+      let dataFilters = []
+      for (let index in this.dataScope) {
+        let obj = {text: this.dataScope[index].valuee, value: this.dataScope[index].keyy}
+        dataFilters.push(obj)
+      }
       return [{
         title: '角色',
         dataIndex: 'roleName'
@@ -153,6 +166,24 @@ export default {
         dataIndex: 'modifyTime',
         sorter: true,
         sortOrder: sortedInfo.columnKey === 'modifyTime' && sortedInfo.order
+      }, {
+        title: '数据范围',
+        dataIndex: 'dataScope',
+        customRender: (text, row, index) => {
+          for (let _index in this.dataScope) {
+            let key = Number(this.dataScope[_index].keyy)
+            if (text === key) {
+              return this.dataScope[_index].valuee
+            } else {
+              continue
+            }
+          }
+          return text
+        },
+        filters: dataFilters,
+        filterMultiple: false,
+        filteredValue: filteredInfo.dataScope || null,
+        onFilter: (value, record) => parseInt(value) === record.dataScope
       }, {
         title: '操作',
         dataIndex: 'operation',
@@ -230,7 +261,7 @@ export default {
       })
     },
     exprotExccel () {
-      let {sortedInfo} = this
+      let {sortedInfo, filteredInfo} = this
       let sortField, sortOrder
       // 获取当前列的排序和列的过滤规则
       if (sortedInfo) {
@@ -240,11 +271,12 @@ export default {
       this.$export('role/excel', {
         sortField: sortField,
         sortOrder: sortOrder,
-        ...this.queryParams
+        ...this.queryParams,
+        ...filteredInfo
       })
     },
     search () {
-      let {sortedInfo} = this
+      let {sortedInfo, filteredInfo} = this
       let sortField, sortOrder
       // 获取当前列的排序和列的过滤规则
       if (sortedInfo) {
@@ -254,7 +286,8 @@ export default {
       this.selectData({
         sortField: sortField,
         sortOrder: sortOrder,
-        ...this.queryParams
+        ...this.queryParams,
+        ...filteredInfo
       })
     },
     reset () {
@@ -266,6 +299,8 @@ export default {
         this.paginationInfo.current = this.pagination.defaultCurrent
         this.paginationInfo.pageSize = this.pagination.defaultPageSize
       }
+      // 重置列过滤器规则
+      this.filteredInfo = null
       // 重置列排序规则
       this.sortedInfo = null
       // 重置查询参数
@@ -277,11 +312,13 @@ export default {
     handleTableChange (pagination, filters, sorter) {
       // 将这两个参数赋值给Vue data，用于后续使用
       this.paginationInfo = pagination
+      this.filteredInfo = filters
       this.sortedInfo = sorter
       this.fetch({
         sortField: sorter.field,
         sortOrder: sorter.order,
-        ...this.queryParams
+        ...this.queryParams,
+        ...filters
       })
     },
     fetch (params = {}) {
