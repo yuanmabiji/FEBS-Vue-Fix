@@ -19,15 +19,15 @@ spring:
         # 数据源-1，名称为 primary
         primary:
           username: root
-          password: febs_shiro_jwt
+          password: root123
           driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://127.0.0.1:3306/febs_shiro_jwt?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai
+          url: jdbc:mysql://175.178.86.254:3306/febs_shiro_jwt?characterEncoding=UTF-8&useUnicode=true&useSSL=false&serverTimezone=GMT
         # 数据源-2，名称为 test
 #        test:
 #          username: root
 #          password: 123456
 #          driver-class-name: com.mysql.cj.jdbc.Driver
-#          url: jdbc:mysql://127.0.0.1:3306/febs_test?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+#          url: jdbc:mysql://175.178.86.254:3306/febs_test?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
   aop:
     proxy-target-class: true
 
@@ -41,7 +41,7 @@ spring:
       WRITE_DATES_AS_TIMESTAMPS: false
 
   redis:
-    host: 127.0.0.1
+    host: 175.178.86.254
     port: 6379
     password:
     jedis:
